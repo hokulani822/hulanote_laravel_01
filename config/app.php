@@ -55,9 +55,9 @@ return [
     |
     */
 
-    'url' => env('APP_URL', 'http://localhost'),
+    'url' => env('APP_URL', 'https://f9a7ceb8ace04a6185ad032956c66ad2.vfs.cloud9.us-east-1.amazonaws.com'),
 
-    'asset_url' => env('ASSET_URL'),
+    'asset_url' => env('ASSET_URL', 'https://f9a7ceb8ace04a6185ad032956c66ad2.vfs.cloud9.us-east-1.amazonaws.com'),
 
     /*
     |--------------------------------------------------------------------------

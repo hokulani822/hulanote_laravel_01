@@ -1,46 +1,43 @@
 <?php
-use App\Http\Controllers\ProfileController;
-use Illuminate\Support\Facades\Route;
-use Illuminate\Http\Request; //Add
-use App\Http\Controllers\SongController; //Add
-use App\Http\Controllers\ChoreographyController;//Add
 
-//曲：ダッシュボード表示(songs.blade.php)
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SongController;
+use App\Http\Controllers\ChoreographyController;
+use App\Http\Controllers\ChoreographyVideoController;
+use App\Http\Controllers\LyricsController;
+use Illuminate\Support\Facades\Route;
+
+// 曲関連のルート
 Route::get('/', [SongController::class, 'index'])->name('songs.index');
 Route::get('/dashboard', [SongController::class, 'index'])->middleware(['auth'])->name('dashboard');
-
-//曲：追加 
 Route::post('/songs', [SongController::class, 'store'])->name('songs.store');
-
-//曲：削除 
 Route::delete('/songs/{song}', [SongController::class, 'destroy'])->name('songs.destroy');
-
-//曲：詳細
 Route::get('/songs/{song}', [SongController::class, 'show'])->name('songs.show');
-
-//曲：更新画面
 Route::get('/songs/{song}/edit', [SongController::class, 'edit'])->name('songs.edit');
-
-//曲：更新画面
 Route::put('/songs/{song}', [SongController::class, 'update'])->name('songs.update');
 
-
-//歌詞・動画
+// 歌詞関連のルート
 Route::get('/lyrics/{song}/edit', [LyricsController::class, 'edit'])->name('lyrics.edit');
-Route::get('/choreography/{song}', [ChoreographyController::class, 'show'])->name('choreography.show');
 
-//振り付け
-Route::get('/choreography/{song}', [ChoreographyController::class, 'show'])->name('choreography.show');
-Route::get('/choreography/{song}/edit', [ChoreographyController::class, 'edit'])->name('choreography.edit');
-Route::put('/choreography/{song}', [ChoreographyController::class, 'update'])->name('choreography.update');
+// 振り付け関連のルート
+Route::prefix('choreography')->group(function () {
+    Route::get('/{song}', [ChoreographyController::class, 'show'])->name('choreography.show');
+    Route::get('/{song}/edit', [ChoreographyController::class, 'edit'])->name('choreography.edit');
+    Route::put('/{song}', [ChoreographyController::class, 'update'])->name('choreography.update');
+    Route::post('/{song}/upload-video', [ChoreographyController::class, 'uploadVideo'])
+        ->name('choreography.upload_video')
+        ->middleware('auth')  // 認証済みユーザーのみアクセス可能
+        ->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);  // CSRFトークン検証を無効化（必要に応じて）
+});
 
-/**
-* 「ログイン機能」インストールで追加されています 
-*/
-//Route::get('/dashboard', function () {
-//    return view('dashboard');
-//})->middleware(['auth', 'verified'])->name('dashboard');
+// 振り付け動画関連のルート
+Route::prefix('choreography-videos')->group(function () {
+    Route::get('/upload', [ChoreographyVideoController::class, 'showUploadForm'])->name('choreography_videos.upload.form');
+    Route::post('/upload', [ChoreographyVideoController::class, 'store'])->name('choreography_videos.store');
+    Route::get('/{video}', [ChoreographyVideoController::class, 'show'])->name('choreography_videos.show');
+});
 
+// プロフィール関連のルート
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
