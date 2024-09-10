@@ -28,6 +28,8 @@ Route::prefix('choreography')->group(function () {
         ->name('choreography.upload_video')
         ->middleware('auth')  // 認証済みユーザーのみアクセス可能
         ->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);  // CSRFトークン検証を無効化（必要に応じて）
+    Route::delete('/choreography/{song}/video/{video}', [ChoreographyController::class, 'deleteVideo'])
+        ->name('choreography.delete_video');
 });
 
 // 振り付け動画関連のルート

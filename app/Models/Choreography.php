@@ -11,7 +11,15 @@ class Choreography extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['song_id', 'description', 'video_url', 'frames'];
+    protected $fillable = [
+        'song_id',
+        'description',
+        'frames', // frames カラムを追加
+    ];
+
+    protected $casts = [
+        'frames' => 'array', // frames を配列としてキャストする
+    ];
 
     public function song()
     {
@@ -22,4 +30,10 @@ class Choreography extends Model
     {
         return $this->hasMany(ChoreographyVideo::class);
     }
+
+    // frames メソッドは削除します
+    // public function frames()
+    // {
+    //     return $this->hasManyThrough(VideoFrame::class, ChoreographyVideo::class);
+    // }
 }

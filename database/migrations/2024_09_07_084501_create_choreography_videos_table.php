@@ -12,9 +12,8 @@ class CreateChoreographyVideosTable extends Migration
             $table->id();
             $table->foreignId('choreography_id')->constrained()->onDelete('cascade');
             $table->string('url');
-            $table->string('ai_edited_url')->nullable();
-            $table->integer('frame_count')->nullable();
             $table->boolean('ai_edited')->default(false);
+            $table->string('ai_edited_url')->nullable();
             $table->timestamps();
         });
     }
