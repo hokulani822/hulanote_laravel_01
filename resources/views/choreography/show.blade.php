@@ -20,41 +20,98 @@
             width: 95%;
             max-width: 1200px;
         }
-        .frame-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        .frame-scroller {
+            display: flex;
+            overflow-x: auto;
             gap: 0.75rem;
+            padding: 1rem 0;
+            scroll-snap-type: x mandatory;
         }
         .frame-item {
+            flex: 0 0 auto;
+            width: 120px;
             aspect-ratio: 9 / 16;
+            scroll-snap-align: start;
             overflow: hidden;
             border-radius: 0.25rem;
             box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.06);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 5px solid transparent;
         }
         .frame-item img {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
+        .selectable .frame-item {
+            transition: all 0.3s ease, opacity 0.3s ease;
+        }
+        .selectable .frame-item:hover {
+            transform: scale(1.05);
+        }
+        .selectable .frame-item.selected {
+            opacity: 0.5;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3); /* 暗い影を追加 */
+        }
         
         .video-wrapper {
-        max-width: 640px; /* 動画の最大幅を設定 */
-        margin: 0 auto; /* 中央寄せ */
-    }
-    .video-container {
-        position: relative;
-        padding-bottom: 56.25%; /* 16:9のアスペクト比 */
-        height: 0;
-        overflow: hidden;
-    }
-    .video-container video {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-    }
-
+            max-width: 640px;
+            margin: 0 auto;
+        }
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+        }
+        .video-container video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .btn-action,
+        .btn-delete-mode,
+        .btn-delete,
+        .btn-select-mode {
+            background-color: #D2B48C;
+            color: #FFFFFF;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-action:hover,
+        .btn-delete-mode:hover,
+        .btn-delete:hover,
+        .btn-select-mode:hover {
+            background-color: #8B4513;
+            color: #FFFFFF;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn-pink {
+            background-color: #FF69B4;
+            color: #FFFFFF;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(255, 105, 180, 0.4);
+        }
+        
+        .btn-pink:hover {
+            background-color: #FF1493;
+            color: #FFFFFF;
+            box-shadow: 0 4px 6px rgba(255, 20, 147, 0.6);
+        }
     </style>
   
     <div class="min-h-screen bg-plumeria flex justify-center items-center py-12 px-4">
@@ -67,37 +124,49 @@
                 </div>
                 
                 <div class="bg-white bg-opacity-90 rounded-lg shadow-lg p-6 border border-soft-brown">
-                @if($choreography && $choreography->videos->isNotEmpty())
-                <div class="mb-6">
-                    <h2 class="text-2xl font-semibold text-soft-brown mb-2">振り付け動画</h2>
-                    @foreach($choreography->videos as $video)
-                        <div class="video-wrapper mb-4" data-video-id="{{ $video->id }}">
-                            <div class="video-container">
-                                <video controls>
-                                    <source src="{{ secure_asset('storage/' . $video->url) }}" type="video/mp4">
-                                    Your browser does not support the video tag.
-                                </video>
-                            </div>
-                            <div class="flex justify-between items-center mt-2">
-                                <div>
-                                    <p class="text-sm text-gray-600">アップロード日時: {{ $video->created_at }}</p>
-                                    <p class="text-sm text-gray-600">AI編集: {{ $video->ai_edited ? '完了' : '処理中' }}</p>
+                    @if($choreography && $choreography->videos->isNotEmpty())
+                        <div class="mb-6">
+                            <h2 class="text-2xl font-semibold text-soft-brown mb-2">振り付け動画</h2>
+                            @foreach($choreography->videos as $video)
+                                <div class="video-wrapper mb-4" data-video-id="{{ $video->id }}">
+                                    <div class="video-container">
+                                        <video controls>
+                                            <source src="{{ secure_asset('storage/' . $video->url) }}" type="video/mp4">
+                                            Your browser does not support the video tag.
+                                        </video>
+                                    </div>
+                                    <div class="flex justify-between items-center mt-2">
+                                        <div>
+                                            <p class="text-sm text-gray-600">アップロード日時: {{ $video->created_at }}</p>
+                                            <p class="text-sm text-gray-600">AI編集: {{ $video->ai_edited ? '完了' : '処理中' }}</p>
+                                        </div>
+                                        <button class="delete-video bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" data-video-id="{{ $video->id }}">
+                                            動画を削除
+                                        </button>
+                                    </div>
                                 </div>
-                                <button class="delete-video bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" data-video-id="{{ $video->id }}">
-                                    削除
-                                </button>
-                            </div>
+                            @endforeach
                         </div>
-                    @endforeach
-                </div>
 
-                        @if($choreography->frames)
+                        @if($choreography && $choreography->frames)
                             <div class="mt-8">
-                                <h2 class="text-2xl font-semibold text-soft-brown mb-4">振り付けフレーム</h2>
-                                <div class="frame-grid">
-                                    @foreach(json_decode($choreography->frames) as $frame)
-                                        <div class="frame-item">
-                                            <img src="{{ secure_asset('storage/' . $frame->frame_url) }}" alt="Frame at {{ $frame->timestamp }}s">
+                                <h2 class="text-2xl font-semibold text-soft-brown mb-4">振り付け一覧</h2>
+                                <button id="toggleSelectMode" class="btn-select-mode btn-pink">
+                                    不要な画像を選択する
+                                </button>
+                                
+                                <div id="selectControls" class="mb-4 hidden">
+                                    <button id="deleteUnselectedFrames" class="btn-delete btn-pink">
+                                        選択した画像以外を削除
+                                    </button>
+                                    <button id="undoDelete" class="btn-action btn-pink ml-2 hidden">
+                                        元に戻す
+                                    </button>
+                                </div>
+                                <div id="frameScroller" class="frame-scroller">
+                                    @foreach(json_decode($choreography->frames) as $index => $frame)
+                                        <div class="frame-item" data-frame-index="{{ $index }}">
+                                            <img src="{{ secure_asset('storage/' . $frame->frame_url) }}" alt="Frame at {{ $frame->timestamp }}s" class="frame-image">
                                         </div>
                                     @endforeach
                                 </div>
@@ -131,7 +200,7 @@
                                 </div>
                                 <p id="progressText" class="text-sm text-gray-600 mt-1">0%</p>
                             </div>
-                            <button type="submit" class="bg-soft-brown hover:bg-opacity-80 text-white font-bold py-2 px-4 rounded-full transition duration-300 shadow-md">
+                            <button type="submit" class="btn-action">
                                 アップロード
                             </button>
                         </form>
@@ -151,6 +220,141 @@
     </div>
 
     <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const toggleSelectModeButton = document.getElementById('toggleSelectMode');
+    const selectControls = document.getElementById('selectControls');
+    const deleteButton = document.getElementById('deleteUnselectedFrames');
+    const undoButton = document.getElementById('undoDelete');
+    const frameScroller = document.getElementById('frameScroller');
+    let selectMode = false;
+    let selectedFrames = [];
+    let deletedFrames = [];
+
+    if (toggleSelectModeButton && selectControls && deleteButton && undoButton && frameScroller) {
+        toggleSelectModeButton.addEventListener('click', function() {
+            selectMode = !selectMode;
+            selectControls.classList.toggle('hidden');
+            frameScroller.classList.toggle('selectable');
+            toggleSelectModeButton.textContent = selectMode ? '選択モードを終了' : '不要な画像を選択する';
+        
+            if (!selectMode) {
+                selectedFrames = [];
+                document.querySelectorAll('.frame-item.selected').forEach(item => {
+                    item.classList.remove('selected');
+                });
+            }
+        });
+
+        frameScroller.addEventListener('click', function(e) {
+            if (!selectMode) return;
+            
+            const frameItem = e.target.closest('.frame-item');
+            if (frameItem) {
+                const frameIndex = parseInt(frameItem.dataset.frameIndex);
+                if (frameItem.classList.toggle('selected')) {
+                    selectedFrames.push(frameIndex);
+                } else {
+                    selectedFrames = selectedFrames.filter(index => index !== frameIndex);
+                }
+            }
+        });
+
+        deleteButton.addEventListener('click', function() {
+            if (selectedFrames.length === 0) {
+                alert('削除する画像が選択されていません。');
+                return;
+            }
+        
+            if (confirm(`選択された${selectedFrames.length}個の画像を削除してもよろしいですか？`)) {
+                const songId = '{{ $song->id }}';
+        
+                fetch(`/choreography/${songId}/delete-frames`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ frames: selectedFrames })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        selectedFrames.forEach(index => {
+                            const frameItem = document.querySelector(`.frame-item[data-frame-index="${index}"]`);
+                            if (frameItem) {
+                                deletedFrames.push({
+                                    index: index,
+                                    element: frameItem.cloneNode(true)
+                                });
+                                frameItem.remove();
+                            }
+                        });
+                        selectedFrames = [];
+                        alert(data.message);
+                        undoButton.classList.remove('hidden');
+                    } else {
+                        alert('画像の削除中にエラーが発生しました: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('画像の削除中にエラーが発生しました。');
+                });
+            }
+        });
+
+        undoButton.addEventListener('click', function() {
+            if (deletedFrames.length === 0) {
+                alert('元に戻す操作はありません。');
+                return;
+            }
+
+            const songId = '{{ $song->id }}';
+            const framesToRestore = deletedFrames.map(frame => frame.index);
+
+            console.log('Restoring frames:', framesToRestore);
+
+            fetch(`/choreography/${songId}/restore-frames`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ frames: framesToRestore })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Server response:', data);
+                if (data.success) {
+                    deletedFrames.forEach(frame => {
+                        const existingFrame = document.querySelector(`.frame-item[data-frame-index="${frame.index}"]`);
+                        if (!existingFrame) {
+                            frameScroller.appendChild(frame.element);
+                        } else {
+                            existingFrame.classList.remove('deleted');
+                        }
+                    });
+                    deletedFrames = [];
+                    undoButton.classList.add('hidden');
+                    alert(data.message);
+                } else {
+                    alert('画像の復元中にエラーが発生しました: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('画像の復元中にエラーが発生しました。');
+            });
+        });
+    }
+
     document.getElementById('videoUploadForm').addEventListener('submit', function(e) {
         e.preventDefault();
         
@@ -178,7 +382,6 @@
                 var response = JSON.parse(jsonResponse);
                 if (xhr.status === 200 && response.success) {
                     alert(response.message);
-                    // 動的にUIを更新
                     window.location.reload();
                 } else {
                     alert(response.message || 'アップロードに失敗しました。もう一度お試しください。');
@@ -194,47 +397,6 @@
         };
         xhr.send(formData);
     });
-    
-    document.addEventListener('DOMContentLoaded', function() {
-        const deleteButtons = document.querySelectorAll('.delete-video');
-        deleteButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const videoId = this.getAttribute('data-video-id');
-                if (confirm('この動画を削除してもよろしいですか？')) {
-                    deleteVideo(videoId);
-                }
-            });
-        });
-
-        function deleteVideo(videoId) {
-            fetch('{{ secure_url(route('choreography.delete_video', ['song' => $song, 'video' => ':videoId'])) }}'.replace(':videoId', videoId), {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.success) {
-                    const videoContainer = document.querySelector(`.video-container[data-video-id="${videoId}"]`);
-                    videoContainer.remove();
-                    alert(data.message);
-                } else {
-                    throw new Error(data.message || '動画の削除中にエラーが発生しました。');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert(`動画の削除中にエラーが発生しました: ${error.message}`);
-            });
-        }
-    });
-    </script>
+});
+</script>
 </x-app-layout>
