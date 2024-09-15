@@ -46,6 +46,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/upload', [ChoreographyVideoController::class, 'showUploadForm'])->name('choreography_videos.upload.form');
         Route::post('/upload', [ChoreographyVideoController::class, 'store'])->name('choreography_videos.store');
         Route::get('/{video}', [ChoreographyVideoController::class, 'show'])->name('choreography_videos.show');
+        Route::delete('/choreography/{song}/video/{video}', [ChoreographyController::class, 'deleteVideo'])->name('choreography.delete_video');
     });
 
     // プロフィール関連のルート

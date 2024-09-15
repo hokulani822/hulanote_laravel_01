@@ -199,9 +199,9 @@
                         <a href="{{ route('songs.show', $song) }}" class="text-soft-brown hover:text-opacity-80 font-bold">
                             ← 曲の詳細に戻る
                         </a>
-                        <a href="{{ route('choreography.edit', $song) }}" class="btn-action">
-                            振り付け情報を編集
-                        </a>
+                        <!--<a href="{{ route('choreography.edit', $song) }}" class="btn-action">-->
+                        <!--    振り付け情報を編集-->
+                        <!--</a>-->
                     </div>
                 </div>
             </div>
@@ -343,7 +343,39 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
-
+    
+     // 動画削除機能を追加
+    document.querySelectorAll('.delete-video').forEach(button => {
+        button.addEventListener('click', function() {
+            const videoId = this.dataset.videoId;
+            const songId = '{{ $song->id }}';
+            if (confirm('この動画を削除してもよろしいですか？')) {
+                fetch(`/choreography/${songId}/video/${videoId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        // 動画要素を画面から削除
+                        this.closest('.video-wrapper').remove();
+                    } else {
+                        alert('動画の削除中にエラーが発生しました: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('動画の削除中にエラーが発生しました。');
+                });
+            }
+        });
+    });
+    
     document.getElementById('videoUploadForm').addEventListener('submit', function(e) {
         e.preventDefault();
         
