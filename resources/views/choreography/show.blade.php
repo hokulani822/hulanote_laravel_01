@@ -74,7 +74,6 @@
         }
         
         .btn-action,
-        .btn-delete-mode,
         .btn-delete,
         .btn-select-mode {
             background-color: #D2B48C;
@@ -88,7 +87,6 @@
         }
         
         .btn-action:hover,
-        .btn-delete-mode:hover,
         .btn-delete:hover,
         .btn-select-mode:hover {
             background-color: #8B4513;
@@ -96,23 +94,14 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
         }
         
-        .btn-pink {
-            background-color: #FF69B4;
-            color: #FFFFFF;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 9999px;
-            font-weight: bold;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 4px rgba(255, 105, 180, 0.4);
+        .btn-delete {
+            background-color: #FF6347; /* トマト色 */
         }
         
-        .btn-pink:hover {
-            background-color: #FF1493;
-            color: #FFFFFF;
-            box-shadow: 0 4px 6px rgba(255, 20, 147, 0.6);
+        .btn-delete:hover {
+            background-color: #D32F2F; /* 濃い赤 */
         }
-    </style>
+</style>
   
     <div class="min-h-screen bg-plumeria flex justify-center items-center py-12 px-4">
         <div class="main-content">
@@ -140,7 +129,7 @@
                                             <p class="text-sm text-gray-600">アップロード日時: {{ $video->created_at }}</p>
                                             <p class="text-sm text-gray-600">AI編集: {{ $video->ai_edited ? '完了' : '処理中' }}</p>
                                         </div>
-                                        <button class="delete-video bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" data-video-id="{{ $video->id }}">
+                                        <button class="delete-video btn-action btn-delete" data-video-id="{{ $video->id }}">
                                             動画を削除
                                         </button>
                                     </div>
@@ -151,15 +140,15 @@
                         @if($choreography && $choreography->frames)
                             <div class="mt-8">
                                 <h2 class="text-2xl font-semibold text-soft-brown mb-4">振り付け一覧</h2>
-                                <button id="toggleSelectMode" class="btn-select-mode btn-pink">
+                                <button id="toggleSelectMode" class="btn-action btn-select-mode">
                                     不要な画像を選択する
                                 </button>
                                 
                                 <div id="selectControls" class="mb-4 hidden">
-                                    <button id="deleteUnselectedFrames" class="btn-delete btn-pink">
-                                        選択した画像以外を削除
+                                    <button id="deleteUnselectedFrames" class="btn-action btn-delete">
+                                        選択した画像を削除
                                     </button>
-                                    <button id="undoDelete" class="btn-action btn-pink ml-2 hidden">
+                                    <button id="undoDelete" class="btn-action ml-2 hidden">
                                         元に戻す
                                     </button>
                                 </div>
@@ -210,7 +199,7 @@
                         <a href="{{ route('songs.show', $song) }}" class="text-soft-brown hover:text-opacity-80 font-bold">
                             ← 曲の詳細に戻る
                         </a>
-                        <a href="{{ route('choreography.edit', $song) }}" class="bg-soft-brown hover:bg-opacity-80 text-white font-bold py-2 px-4 rounded-full transition duration-300 shadow-md">
+                        <a href="{{ route('choreography.edit', $song) }}" class="btn-action">
                             振り付け情報を編集
                         </a>
                     </div>
@@ -219,7 +208,7 @@
         </div>
     </div>
 
-    <script>
+<script>
 document.addEventListener('DOMContentLoaded', function() {
     const toggleSelectModeButton = document.getElementById('toggleSelectMode');
     const selectControls = document.getElementById('selectControls');
