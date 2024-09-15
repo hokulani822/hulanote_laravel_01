@@ -136,35 +136,7 @@
                                 </div>
                             @endforeach
                         </div>
-
-                        @if($choreography && $choreography->frames)
-                            <div class="mt-8">
-                                <h2 class="text-2xl font-semibold text-soft-brown mb-4">振り付け一覧</h2>
-                                <button id="toggleSelectMode" class="btn-action btn-select-mode">
-                                    不要な画像を選択する
-                                </button>
-                                
-                                <div id="selectControls" class="mb-4 hidden">
-                                    <button id="deleteUnselectedFrames" class="btn-action btn-delete">
-                                        選択した画像を削除
-                                    </button>
-                                    <button id="undoDelete" class="btn-action ml-2 hidden">
-                                        元に戻す
-                                    </button>
-                                </div>
-                                <div id="frameScroller" class="frame-scroller">
-                                    @foreach(json_decode($choreography->frames) as $index => $frame)
-                                        <div class="frame-item" data-frame-index="{{ $index }}">
-                                            <img src="{{ secure_asset('storage/' . $frame->frame_url) }}" alt="Frame at {{ $frame->timestamp }}s" class="frame-image">
-                                        </div>
-                                    @endforeach
-                                </div>
-                            </div>
-                        @endif
-                    @else
-                        <p class="text-soft-brown mb-4">振り付け情報がまだ登録されていません。</p>
-                    @endif
-
+                        
                     <!-- 動画アップロードフォーム -->
                     <div class="mb-6">
                         <h2 class="text-2xl font-semibold text-soft-brown mb-2">新しい動画をアップロード</h2>
@@ -194,6 +166,35 @@
                             </button>
                         </form>
                     </div>
+
+                        @if($choreography && $choreography->frames)
+                            <div class="mt-8">
+                                <h2 class="text-2xl font-semibold text-soft-brown mb-4">振り付け一覧</h2>
+                                <button id="toggleSelectMode" class="btn-action btn-select-mode">
+                                    不要な画像を選択する
+                                </button>
+                                
+                                <div id="selectControls" class="mb-4 hidden">
+                                    <button id="deleteUnselectedFrames" class="btn-action btn-delete">
+                                        選択した画像を削除
+                                    </button>
+                                    <button id="undoDelete" class="btn-action ml-2 hidden">
+                                        削除した画像を復元
+                                    </button>
+                                </div>
+                                <div id="frameScroller" class="frame-scroller">
+                                    @foreach(json_decode($choreography->frames) as $index => $frame)
+                                        <div class="frame-item" data-frame-index="{{ $index }}">
+                                            <img src="{{ secure_asset('storage/' . $frame->frame_url) }}" alt="Frame at {{ $frame->timestamp }}s" class="frame-image">
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+                    @else
+                        <p class="text-soft-brown mb-4">振り付け情報がまだ登録されていません。</p>
+                    @endif
+
 
                     <div class="flex justify-between items-center mt-8">
                         <a href="{{ route('songs.show', $song) }}" class="text-soft-brown hover:text-opacity-80 font-bold">

@@ -31,52 +31,62 @@ class ChoreographyController extends Controller
 
     public function uploadVideo(Request $request, Song $song)
     {
-        Log::info('Video upload process started', ['song_id' => $song->id]);
+    Log::info('Video upload process started', ['song_id' => $song->id]);
 
-        try {
-            $request->validate([
-                'video' => 'required|file|mimetypes:video/mp4,video/quicktime|max:50000',
-            ]);
+    try {
+        $request->validate([
+            'video' => 'required|file|mimetypes:video/mp4,video/quicktime|max:150000',
+        ]);
 
-            if ($request->hasFile('video')) {
-                $path = $request->file('video')->store('videos', 'public');
-                $fullPath = storage_path('app/public/' . $path);
-                Log::info('Video file stored', ['path' => $fullPath]);
-
-                $choreography = $song->choreography ?? $song->choreography()->create();
-                
-                $video = $choreography->videos()->create([
-                    'url' => $path,
-                    'ai_edited' => false,
-                ]);
-                Log::info('Video record created', ['video_id' => $video->id]);
-
-                // フレーム抽出を非同期で実行
-                Artisan::queue('app:extract-video-frames', ['video_id' => $video->id]);
-
-                return response()->json([
-                    'success' => true,
-                    'message' => '動画がアップロードされました。フレーム抽出は背景で実行されます。',
-                    'video_url' => Storage::url($path),
-                    'video_id' => $video->id
-                ]);
+        if ($request->hasFile('video')) {
+            $choreography = $song->choreography ?? $song->choreography()->create();
+            
+            // 既存の動画を削除
+            if ($choreography->videos()->exists()) {
+                foreach ($choreography->videos as $oldVideo) {
+                    Storage::delete('public/' . $oldVideo->url);
+                    $oldVideo->delete();
+                }
+                // フレームもクリア
+                $choreography->update(['frames' => null]);
             }
 
-            return response()->json([
-                'success' => false,
-                'message' => '動画のアップロードに失敗しました。'
-            ], 400);
+            $path = $request->file('video')->store('videos', 'public');
+            $fullPath = storage_path('app/public/' . $path);
+            Log::info('Video file stored', ['path' => $fullPath]);
 
-        } catch (\Exception $e) {
-            Log::error('Error in upload video', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+            $video = $choreography->videos()->create([
+                'url' => $path,
+                'ai_edited' => false,
             ]);
+            Log::info('Video record created', ['video_id' => $video->id]);
+
+            // フレーム抽出を非同期で実行
+            Artisan::queue('app:extract-video-frames', ['video_id' => $video->id]);
+
             return response()->json([
-                'success' => false,
-                'message' => '動画のアップロードに失敗しました: ' . $e->getMessage()
-            ], 500);
+                'success' => true,
+                'message' => '動画が更新されました。フレーム抽出は背景で実行されます。',
+                'video_url' => Storage::url($path),
+                'video_id' => $video->id
+            ]);
         }
+
+        return response()->json([
+            'success' => false,
+            'message' => '動画のアップロードに失敗しました。'
+        ], 400);
+
+    } catch (\Exception $e) {
+        Log::error('Error in upload video', [
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ]);
+        return response()->json([
+            'success' => false,
+            'message' => '動画のアップロードに失敗しました: ' . $e->getMessage()
+        ], 500);
+    }
     }
 
     public function deleteVideo(Song $song, ChoreographyVideo $video)
