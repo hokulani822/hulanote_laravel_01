@@ -231,4 +231,22 @@ class ChoreographyController extends Controller
         'message' => '復元する画像がありませんでした。'
     ]);
 }
+
+public function updateLyrics(Request $request, Song $song)
+{
+    $choreography = $song->choreography;
+    if (!$choreography) {
+        return response()->json(['success' => false, 'message' => '振り付けが見つかりません。'], 404);
+    }
+
+    $lyrics = $request->input('lyrics');
+    $choreography->lyrics_frames = $lyrics;
+    $choreography->save();
+
+    return response()->json([
+        'success' => true,
+        'message' => '歌詞が更新されました。'
+    ]);
+}
+
 }

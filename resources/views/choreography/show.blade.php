@@ -182,6 +182,17 @@
                                         削除した画像を復元
                                     </button>
                                 </div>
+                                
+                                <div class="mb-4">
+                                <h2 class="text-2xl font-semibold text-soft-brown mb-2">歌詞</h2>
+                                <div id="lyricsContainer" class="relative">
+                                    <div id="lyricsFrame" class="w-full p-2 border border-soft-brown rounded bg-white bg-opacity-75 whitespace-nowrap overflow-x-auto" contenteditable="true">
+                                        {{ $choreography->lyrics_frames ?? '' }}
+                                    </div>
+                                </div>
+                                <button id="saveLyrics" class="btn-action mt-2">歌詞を保存</button>
+                            </div>
+                            
                                 <div id="frameScroller" class="frame-scroller">
                                     @foreach(json_decode($choreography->frames) as $index => $frame)
                                         <div class="frame-item" data-frame-index="{{ $index }}">
@@ -216,6 +227,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const deleteButton = document.getElementById('deleteUnselectedFrames');
     const undoButton = document.getElementById('undoDelete');
     const frameScroller = document.getElementById('frameScroller');
+    const lyricsFrame = document.getElementById('lyricsFrame');
+    const saveLyricsButton = document.getElementById('saveLyrics');
     let selectMode = false;
     let selectedFrames = [];
     let deletedFrames = [];
@@ -261,7 +274,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 fetch(`/choreography/${songId}/delete-frames`, {
                     method: 'DELETE',
                     headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                         'Accept': 'application/json',
                         'Content-Type': 'application/json'
                     },
@@ -303,8 +316,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const songId = '{{ $song->id }}';
             const framesToRestore = deletedFrames.map(frame => frame.index);
 
-            console.log('Restoring frames:', framesToRestore);
-
             fetch(`/choreography/${songId}/restore-frames`, {
                 method: 'POST',
                 headers: {
@@ -321,7 +332,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 return response.json();
             })
             .then(data => {
-                console.log('Server response:', data);
                 if (data.success) {
                     deletedFrames.forEach(frame => {
                         const existingFrame = document.querySelector(`.frame-item[data-frame-index="${frame.index}"]`);
@@ -345,38 +355,54 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-     // 動画削除機能を追加
-    document.querySelectorAll('.delete-video').forEach(button => {
-        button.addEventListener('click', function() {
-            const videoId = this.dataset.videoId;
+    // 歌詞関連の機能
+    if (lyricsFrame && saveLyricsButton && frameScroller) {
+        // 歌詞保存ボタンのクリックイベント
+        saveLyricsButton.addEventListener('click', function() {
             const songId = '{{ $song->id }}';
-            if (confirm('この動画を削除してもよろしいですか？')) {
-                fetch(`/choreography/${songId}/video/${videoId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert(data.message);
-                        // 動画要素を画面から削除
-                        this.closest('.video-wrapper').remove();
-                    } else {
-                        alert('動画の削除中にエラーが発生しました: ' + data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('動画の削除中にエラーが発生しました。');
-                });
+            const lyrics = lyricsFrame.textContent;
+
+            fetch(`/choreography/${songId}/update-lyrics`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ lyrics: lyrics })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                } else {
+                    alert('歌詞の保存中にエラーが発生しました。');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('歌詞の保存中にエラーが発生しました。');
+            });
+        });
+
+        // フレームスクローラーのスクロールに合わせて歌詞フレームをスクロール
+        frameScroller.addEventListener('scroll', function() {
+            lyricsFrame.scrollLeft = frameScroller.scrollLeft;
+        });
+
+        // 歌詞フレームのスクロールに合わせてフレームスクローラーをスクロール
+        lyricsFrame.addEventListener('scroll', function() {
+            frameScroller.scrollLeft = lyricsFrame.scrollLeft;
+        });
+
+        // Enterキーの押下を監視し、改行を防止
+        lyricsFrame.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
             }
         });
-    });
+    }
     
+    // 動画アップロードフォームの処理
     document.getElementById('videoUploadForm').addEventListener('submit', function(e) {
         e.preventDefault();
         
@@ -418,6 +444,38 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('ネットワークエラーが発生しました。接続を確認して再度お試しください。');
         };
         xhr.send(formData);
+    });
+
+    // 動画削除機能
+    document.querySelectorAll('.delete-video').forEach(button => {
+        button.addEventListener('click', function() {
+            const videoId = this.dataset.videoId;
+            const songId = '{{ $song->id }}';
+            if (confirm('この動画を削除してもよろしいですか？')) {
+                fetch(`/choreography/${songId}/video/${videoId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        // 動画要素を画面から削除
+                        this.closest('.video-wrapper').remove();
+                    } else {
+                        alert('動画の削除中にエラーが発生しました: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('動画の削除中にエラーが発生しました。');
+                });
+            }
+        });
     });
 });
 </script>
