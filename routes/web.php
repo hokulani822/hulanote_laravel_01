@@ -15,16 +15,16 @@ Route::get('/songs/{song}', [SongController::class, 'show'])->name('songs.show')
 Route::middleware(['auth'])->group(function () {
     // ダッシュボード
     Route::get('/dashboard', [SongController::class, 'index'])->name('dashboard');
-
+    
     // 曲関連のルート
     Route::post('/songs', [SongController::class, 'store'])->name('songs.store');
     Route::delete('/songs/{song}', [SongController::class, 'destroy'])->name('songs.destroy');
     Route::get('/songs/{song}/edit', [SongController::class, 'edit'])->name('songs.edit');
     Route::put('/songs/{song}', [SongController::class, 'update'])->name('songs.update');
-
+    
     // 歌詞関連のルート
     Route::get('/lyrics/{song}/edit', [LyricsController::class, 'edit'])->name('lyrics.edit');
-
+    
     // 振り付け関連のルート
     Route::prefix('choreography')->group(function () {
         Route::get('/{song}', [ChoreographyController::class, 'show'])->name('choreography.show');
@@ -40,7 +40,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/{song}/restore-frames', [ChoreographyController::class, 'restoreFrames'])
             ->name('choreography.restore_frames');
     });
-
+    
     // 振り付け動画関連のルート
     Route::prefix('choreography-videos')->group(function () {
         Route::get('/upload', [ChoreographyVideoController::class, 'showUploadForm'])->name('choreography_videos.upload.form');
@@ -48,7 +48,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{video}', [ChoreographyVideoController::class, 'show'])->name('choreography_videos.show');
         Route::delete('/choreography/{song}/video/{video}', [ChoreographyController::class, 'deleteVideo'])->name('choreography.delete_video');
     });
-
+    
     // プロフィール関連のルート
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

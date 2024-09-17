@@ -18,7 +18,8 @@ class Choreography extends Model
     ];
 
     protected $casts = [
-        'frames' => 'array', // frames を配列としてキャストする
+        'frames' => 'array',
+        'lyrics_frames' => 'array',
     ];
 
     public function song()
@@ -36,4 +37,6 @@ class Choreography extends Model
     // {
     //     return $this->hasManyThrough(VideoFrame::class, ChoreographyVideo::class);
     // }
+    
+    
 }

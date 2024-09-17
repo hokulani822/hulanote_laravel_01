@@ -136,8 +136,8 @@
                                 </div>
                             @endforeach
                         </div>
-                        
-                    <!-- 動画アップロードフォーム -->
+                    
+                   <!-- 動画アップロードフォーム -->
                     <div class="mb-6">
                         <h2 class="text-2xl font-semibold text-soft-brown mb-2">新しい動画をアップロード</h2>
                         @if ($errors->any())
@@ -153,7 +153,7 @@
                             @csrf
                             <div class="mb-4">
                                 <input type="file" name="video" accept="video/mp4,video/quicktime" class="mb-2" id="videoInput" required>
-                                <p class="text-sm text-gray-600">許可される形式: MP4, MOV. 最大サイズ: 50MB</p>
+                                <p class="text-sm text-gray-600">許可される形式: MP4, MOV. 最大サイズ: 100MB</p>
                             </div>
                             <div class="mb-4 hidden" id="progressBarContainer">
                                 <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
@@ -190,7 +190,7 @@
                                     @endforeach
                                 </div>
                             </div>
-                        @endif
+                         @endif
                     @else
                         <p class="text-soft-brown mb-4">振り付け情報がまだ登録されていません。</p>
                     @endif

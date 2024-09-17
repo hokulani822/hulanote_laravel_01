@@ -66,7 +66,7 @@ class ChoreographyController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => '動画が更新されました。フレーム抽出は背景で実行されます。',
+                'message' => '動画が更新されました。画像を抽出します。',
                 'video_url' => Storage::url($path),
                 'video_id' => $video->id
             ]);
