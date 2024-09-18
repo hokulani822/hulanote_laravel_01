@@ -171,7 +171,7 @@
                             <div class="mt-8">
                                 <h2 class="text-2xl font-semibold text-soft-brown mb-4">振り付け一覧</h2>
                                 <button id="toggleSelectMode" class="btn-action btn-select-mode">
-                                    不要な画像を選択する
+                                    不要な画像を削除する
                                 </button>
                                 
                                 <div id="selectControls" class="mb-4 hidden">
@@ -185,12 +185,13 @@
                                 
                                 <div class="mb-4">
                                 <h2 class="text-2xl font-semibold text-soft-brown mb-2">歌詞</h2>
+                                <button id="saveLyrics" class="btn-action mt-2">歌詞を保存</button>
                                 <div id="lyricsContainer" class="relative">
                                     <div id="lyricsFrame" class="w-full p-2 border border-soft-brown rounded bg-white bg-opacity-75 whitespace-nowrap overflow-x-auto" contenteditable="true">
                                         {{ $choreography->lyrics_frames ?? '' }}
                                     </div>
                                 </div>
-                                <button id="saveLyrics" class="btn-action mt-2">歌詞を保存</button>
+                                
                             </div>
                             
                                 <div id="frameScroller" class="frame-scroller">
@@ -238,7 +239,7 @@ document.addEventListener('DOMContentLoaded', function() {
             selectMode = !selectMode;
             selectControls.classList.toggle('hidden');
             frameScroller.classList.toggle('selectable');
-            toggleSelectModeButton.textContent = selectMode ? '選択モードを終了' : '不要な画像を選択する';
+            toggleSelectModeButton.textContent = selectMode ? '削除モードを終了' : '不要な画像を削除する';
         
             if (!selectMode) {
                 selectedFrames = [];
