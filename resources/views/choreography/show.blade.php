@@ -113,59 +113,62 @@
                 </div>
                 
                 <div class="bg-white bg-opacity-90 rounded-lg shadow-lg p-6 border border-soft-brown">
-                    @if($choreography && $choreography->videos->isNotEmpty())
+                    @if(!$hasVideo)
+                        <!-- 動画アップロードフォーム -->
                         <div class="mb-6">
-                            <h2 class="text-2xl font-semibold text-soft-brown mb-2">振り付け動画</h2>
-                            @foreach($choreography->videos as $video)
-                                <div class="video-wrapper mb-4" data-video-id="{{ $video->id }}">
-                                    <div class="video-container">
-                                        <video controls>
-                                            <source src="{{ secure_asset('storage/' . $video->url) }}" type="video/mp4">
-                                            Your browser does not support the video tag.
-                                        </video>
-                                    </div>
-                                    <div class="flex justify-between items-center mt-2">
-                                        <div>
-                                            <p class="text-sm text-gray-600">アップロード日時: {{ $video->created_at }}</p>
-                                            <p class="text-sm text-gray-600">AI編集: {{ $video->ai_edited ? '完了' : '処理中' }}</p>
-                                        </div>
-                                        <button class="delete-video btn-action btn-delete" data-video-id="{{ $video->id }}">
-                                            動画を削除
-                                        </button>
-                                    </div>
+                            <h2 class="text-2xl font-semibold text-soft-brown mb-2">新しい動画をアップロード</h2>
+                            @if ($errors->any())
+                                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                                    <ul>
+                                        @foreach ($errors->all() as $error)
+                                            <li>{{ $error }}</li>
+                                        @endforeach
+                                    </ul>
                                 </div>
-                            @endforeach
+                            @endif
+                            <form action="{{ secure_url(route('choreography.upload_video', ['song' => $song])) }}" method="POST" enctype="multipart/form-data" id="videoUploadForm">
+                                @csrf
+                                <div class="mb-4">
+                                    <input type="file" name="video" accept="video/mp4,video/quicktime" class="mb-2" id="videoInput" required>
+                                    <p class="text-sm text-gray-600">許可される形式: MP4, MOV. 最大サイズ: 100MB</p>
+                                </div>
+                                <div class="mb-4 hidden" id="progressBarContainer">
+                                    <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                                        <div class="bg-soft-brown h-2.5 rounded-full" id="progressBar" style="width: 0%"></div>
+                                    </div>
+                                    <p id="progressText" class="text-sm text-gray-600 mt-1">0%</p>
+                                </div>
+                                <button type="submit" class="btn-action">
+                                    アップロード
+                                </button>
+                            </form>
                         </div>
-                    
-                   <!-- 動画アップロードフォーム -->
-                    <div class="mb-6">
-                        <h2 class="text-2xl font-semibold text-soft-brown mb-2">新しい動画をアップロード</h2>
-                        @if ($errors->any())
-                            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-                                <ul>
-                                    @foreach ($errors->all() as $error)
-                                        <li>{{ $error }}</li>
-                                    @endforeach
-                                </ul>
+                    @else
+                        <!-- 動画が存在する場合の表示 -->
+                        @if($choreography && $choreography->videos->isNotEmpty())
+                            <div class="mb-6">
+                                <h2 class="text-2xl font-semibold text-soft-brown mb-2">振り付け動画</h2>
+                                @foreach($choreography->videos as $video)
+                                    <div class="video-wrapper mb-4" data-video-id="{{ $video->id }}">
+                                        <div class="video-container">
+                                            <video controls>
+                                                <source src="{{ secure_asset('storage/' . $video->url) }}" type="video/mp4">
+                                                Your browser does not support the video tag.
+                                            </video>
+                                        </div>
+                                        <div class="flex justify-between items-center mt-2">
+                                            <div>
+                                                <p class="text-sm text-gray-600">アップロード日時: {{ $video->created_at }}</p>
+                                                <p class="text-sm text-gray-600">AI編集: {{ $video->ai_edited ? '完了' : '処理中' }}</p>
+                                            </div>
+                                            <button class="delete-video btn-action btn-delete" data-video-id="{{ $video->id }}">
+                                                動画を削除
+                                            </button>
+                                        </div>
+                                    </div>
+                                @endforeach
                             </div>
                         @endif
-                        <form action="{{ secure_url(route('choreography.upload_video', ['song' => $song])) }}" method="POST" enctype="multipart/form-data" id="videoUploadForm">
-                            @csrf
-                            <div class="mb-4">
-                                <input type="file" name="video" accept="video/mp4,video/quicktime" class="mb-2" id="videoInput" required>
-                                <p class="text-sm text-gray-600">許可される形式: MP4, MOV. 最大サイズ: 100MB</p>
-                            </div>
-                            <div class="mb-4 hidden" id="progressBarContainer">
-                                <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-                                    <div class="bg-soft-brown h-2.5 rounded-full" id="progressBar" style="width: 0%"></div>
-                                </div>
-                                <p id="progressText" class="text-sm text-gray-600 mt-1">0%</p>
-                            </div>
-                            <button type="submit" class="btn-action">
-                                アップロード
-                            </button>
-                        </form>
-                    </div>
 
                         @if($choreography && $choreography->frames)
                             <div class="mt-8">
@@ -203,8 +206,6 @@
                                 </div>
                             </div>
                          @endif
-                    @else
-                        <p class="text-soft-brown mb-4">振り付け情報がまだ登録されていません。</p>
                     @endif
 
 
@@ -230,6 +231,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const frameScroller = document.getElementById('frameScroller');
     const lyricsFrame = document.getElementById('lyricsFrame');
     const saveLyricsButton = document.getElementById('saveLyrics');
+    const videoUploadForm = document.getElementById('videoUploadForm');
     let selectMode = false;
     let selectedFrames = [];
     let deletedFrames = [];
@@ -403,49 +405,45 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // 動画アップロードフォームの処理
-    document.getElementById('videoUploadForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        var formData = new FormData(this);
-        var xhr = new XMLHttpRequest();
-        var progressBarContainer = document.getElementById('progressBarContainer');
-        var progressBar = document.getElementById('progressBar');
-        var progressText = document.getElementById('progressText');
+    if (videoUploadForm) {
+            videoUploadForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                var formData = new FormData(this);
+                var xhr = new XMLHttpRequest();
+                var progressBarContainer = document.getElementById('progressBarContainer');
+                var progressBar = document.getElementById('progressBar');
+                var progressText = document.getElementById('progressText');
 
-        xhr.open('POST', '{{ secure_url(route('choreography.upload_video', ['song' => $song])) }}', true);
-        xhr.upload.onprogress = function(e) {
-            if (e.lengthComputable) {
-                var percentComplete = (e.loaded / e.total) * 100;
-                progressBar.style.width = percentComplete + '%';
-                progressText.textContent = percentComplete.toFixed(2) + '%';
-                progressBarContainer.classList.remove('hidden');
-            }
-        };
-        xhr.onload = function() {
-            console.log('Response status:', xhr.status);
-            console.log('Response text:', xhr.responseText);
-            try {
-                var jsonEndIndex = xhr.responseText.indexOf('<!DOCTYPE html>');
-                var jsonResponse = jsonEndIndex !== -1 ? xhr.responseText.substring(0, jsonEndIndex) : xhr.responseText;
-                var response = JSON.parse(jsonResponse);
-                if (xhr.status === 200 && response.success) {
-                    alert(response.message);
-                    window.location.reload();
-                } else {
-                    alert(response.message || 'アップロードに失敗しました。もう一度お試しください。');
-                }
-            } catch (e) {
-                console.error('Error parsing JSON:', e);
-                console.error('Raw response:', xhr.responseText);
-                alert('予期せぬエラーが発生しました。開発者ツールでエラー詳細を確認してください。');
-            }
-        };
-        xhr.onerror = function() {
-            alert('ネットワークエラーが発生しました。接続を確認して再度お試しください。');
-        };
-        xhr.send(formData);
-    });
+                xhr.open('POST', this.action, true);
+                xhr.upload.onprogress = function(e) {
+                    if (e.lengthComputable) {
+                        var percentComplete = (e.loaded / e.total) * 100;
+                        progressBar.style.width = percentComplete + '%';
+                        progressText.textContent = percentComplete.toFixed(2) + '%';
+                        progressBarContainer.classList.remove('hidden');
+                    }
+                };
+                xhr.onload = function() {
+                    try {
+                        var response = JSON.parse(xhr.responseText);
+                        if (xhr.status === 200 && response.success) {
+                            alert(response.message);
+                            window.location.reload();
+                        } else {
+                            alert(response.message || 'アップロードに失敗しました。もう一度お試しください。');
+                        }
+                    } catch (e) {
+                        console.error('Error parsing JSON:', e);
+                        alert('予期せぬエラーが発生しました。開発者ツールでエラー詳細を確認してください。');
+                    }
+                };
+                xhr.onerror = function() {
+                    alert('ネットワークエラーが発生しました。接続を確認して再度お試しください。');
+                };
+                xhr.send(formData);
+            });
+        }
 
     // 動画削除機能
     document.querySelectorAll('.delete-video').forEach(button => {

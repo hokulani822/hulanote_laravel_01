@@ -25,8 +25,9 @@ class ChoreographyController extends Controller
 
     public function show(Song $song)
     {
-        $choreography = $song->choreography()->with('videos')->first();
-        return view('choreography.show', compact('song', 'choreography'));
+    $choreography = $song->choreography()->with('videos')->first();
+    $hasVideo = $choreography && $choreography->videos->isNotEmpty();
+    return view('choreography.show', compact('song', 'choreography', 'hasVideo'));
     }
 
     public function uploadVideo(Request $request, Song $song)
