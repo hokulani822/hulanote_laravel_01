@@ -229,7 +229,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const deleteButton = document.getElementById('deleteUnselectedFrames');
     const frameScroller = document.getElementById('frameScroller');
     const lyricsFrame = document.getElementById('lyricsFrame');
-    const saveLyricsButton = document.getElementById('saveLyricsButton');
+    const saveLyricsButton = document.getElementById('saveLyrics');
     let selectMode = false;
     let selectedFrames = [];
 
@@ -268,7 +268,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
         
-            if (confirm(`選択された${selectedFrames.length}個の画像を削除してもよろしいですか？`)) {
+            if (confirm(`選択された${selectedFrames.length}個の画像を削除してもよろしいですか？削除した画像は復元できません`)) {
                 const songId = '{{ $song->id }}';
         
                 fetch(`/choreography/${songId}/delete-frames`, {
@@ -318,32 +318,32 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 歌詞保存機能
     if (saveLyricsButton) {
-        saveLyricsButton.addEventListener('click', function() {
-            const songId = '{{ $song->id }}';
-            const lyrics = lyricsFrame.textContent;
+       saveLyricsButton.addEventListener('click', function() {
+        const songId = '{{ $song->id }}';
+        const lyrics = lyricsFrame.textContent;
 
-            fetch(`/choreography/${songId}/update-lyrics`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ lyrics: lyrics })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert(data.message);
-                } else {
-                    alert('歌詞の保存中にエラーが発生しました。');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
+        fetch(`/choreography/${songId}/update-lyrics`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ lyrics: lyrics })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+            } else {
                 alert('歌詞の保存中にエラーが発生しました。');
-            });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('歌詞の保存中にエラーが発生しました。');
         });
-    }
+    });
+}
 
     // フレームのインデックスを更新する関数
     function updateFrameIndices() {
