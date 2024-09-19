@@ -181,9 +181,9 @@
                                     <button id="deleteUnselectedFrames" class="btn-action btn-delete">
                                         選択した画像を削除
                                     </button>
-                                    <button id="undoDelete" class="btn-action ml-2 hidden">
-                                        削除した画像を復元
-                                    </button>
+                                    <!--<button id="undoDelete" class="btn-action ml-2 hidden">-->
+                                    <!--    削除した画像を復元-->
+                                    <!--</button>-->
                                 </div>
                                 
                                 <div class="mb-4">
@@ -227,16 +227,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const toggleSelectModeButton = document.getElementById('toggleSelectMode');
     const selectControls = document.getElementById('selectControls');
     const deleteButton = document.getElementById('deleteUnselectedFrames');
-    const undoButton = document.getElementById('undoDelete');
     const frameScroller = document.getElementById('frameScroller');
     const lyricsFrame = document.getElementById('lyricsFrame');
-    const saveLyricsButton = document.getElementById('saveLyrics');
-    const videoUploadForm = document.getElementById('videoUploadForm');
+    const saveLyricsButton = document.getElementById('saveLyricsButton');
     let selectMode = false;
     let selectedFrames = [];
-    let deletedFrames = [];
 
-    if (toggleSelectModeButton && selectControls && deleteButton && undoButton && frameScroller) {
+    if (toggleSelectModeButton && selectControls && deleteButton && frameScroller) {
         toggleSelectModeButton.addEventListener('click', function() {
             selectMode = !selectMode;
             selectControls.classList.toggle('hidden');
@@ -289,16 +286,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         selectedFrames.forEach(index => {
                             const frameItem = document.querySelector(`.frame-item[data-frame-index="${index}"]`);
                             if (frameItem) {
-                                deletedFrames.push({
-                                    index: index,
-                                    element: frameItem.cloneNode(true)
-                                });
                                 frameItem.remove();
                             }
                         });
                         selectedFrames = [];
                         alert(data.message);
-                        undoButton.classList.remove('hidden');
+                        // 削除後にフレームのインデックスを更新
+                        updateFrameIndices();
                     } else {
                         alert('画像の削除中にエラーが発生しました: ' + data.message);
                     }
@@ -309,58 +303,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
         });
-
-        undoButton.addEventListener('click', function() {
-            if (deletedFrames.length === 0) {
-                alert('元に戻す操作はありません。');
-                return;
-            }
-
-            const songId = '{{ $song->id }}';
-            const framesToRestore = deletedFrames.map(frame => frame.index);
-
-            fetch(`/choreography/${songId}/restore-frames`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ frames: framesToRestore })
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.success) {
-                    deletedFrames.forEach(frame => {
-                        const existingFrame = document.querySelector(`.frame-item[data-frame-index="${frame.index}"]`);
-                        if (!existingFrame) {
-                            frameScroller.appendChild(frame.element);
-                        } else {
-                            existingFrame.classList.remove('deleted');
-                        }
-                    });
-                    deletedFrames = [];
-                    undoButton.classList.add('hidden');
-                    alert(data.message);
-                } else {
-                    alert('画像の復元中にエラーが発生しました: ' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('画像の復元中にエラーが発生しました。');
-            });
-        });
     }
     
-    // 歌詞関連の機能
-    if (lyricsFrame && saveLyricsButton && frameScroller) {
-        // 歌詞保存ボタンのクリックイベント
+    // 歌詞と画像フレームの連携
+    if (lyricsFrame && frameScroller) {
+        frameScroller.addEventListener('scroll', function() {
+            lyricsFrame.scrollLeft = frameScroller.scrollLeft;
+        });
+
+        lyricsFrame.addEventListener('scroll', function() {
+            frameScroller.scrollLeft = lyricsFrame.scrollLeft;
+        });
+    }
+
+    // 歌詞保存機能
+    if (saveLyricsButton) {
         saveLyricsButton.addEventListener('click', function() {
             const songId = '{{ $song->id }}';
             const lyrics = lyricsFrame.textContent;
@@ -386,25 +343,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert('歌詞の保存中にエラーが発生しました。');
             });
         });
+    }
 
-        // フレームスクローラーのスクロールに合わせて歌詞フレームをスクロール
-        frameScroller.addEventListener('scroll', function() {
-            lyricsFrame.scrollLeft = frameScroller.scrollLeft;
-        });
-
-        // 歌詞フレームのスクロールに合わせてフレームスクローラーをスクロール
-        lyricsFrame.addEventListener('scroll', function() {
-            frameScroller.scrollLeft = lyricsFrame.scrollLeft;
-        });
-
-        // Enterキーの押下を監視し、改行を防止
-        lyricsFrame.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-            }
+    // フレームのインデックスを更新する関数
+    function updateFrameIndices() {
+        document.querySelectorAll('.frame-item').forEach((item, index) => {
+            item.dataset.frameIndex = index;
         });
     }
     
+    //動画アップロード
+    const videoUploadForm = document.getElementById('videoUploadForm');
     if (videoUploadForm) {
             videoUploadForm.addEventListener('submit', function(e) {
                 e.preventDefault();

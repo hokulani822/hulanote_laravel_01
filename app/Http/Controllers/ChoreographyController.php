@@ -145,11 +145,8 @@ class ChoreographyController extends Controller
     
     public function deleteFrames(Request $request, Song $song)
 {
-    \Log::info('Delete frames request received', ['song_id' => $song->id, 'frames' => $request->input('frames')]);
-
     $choreography = $song->choreography;
     if (!$choreography) {
-        \Log::error('Choreography not found for song', ['song_id' => $song->id]);
         return response()->json(['success' => false, 'message' => '振り付けが見つかりません。'], 404);
     }
 
@@ -159,79 +156,74 @@ class ChoreographyController extends Controller
     $deletedCount = 0;
     foreach ($framesToDelete as $index) {
         if (isset($frames[$index])) {
-            $frames[$index]['deleted'] = true;
+            unset($frames[$index]);
             $deletedCount++;
-            \Log::info('Frame marked as deleted', ['index' => $index]);
-        } else {
-            \Log::warning('Frame index not found for deletion', ['index' => $index]);
         }
     }
 
     if ($deletedCount > 0) {
-        $choreography->frames = json_encode($frames);
+        $choreography->frames = json_encode(array_values($frames));
         $choreography->save();
-        \Log::info('Frames deleted successfully', ['deleted_count' => $deletedCount]);
         return response()->json([
             'success' => true,
             'message' => $deletedCount . '個の画像が削除されました。'
         ]);
     }
 
-    \Log::warning('No frames deleted');
     return response()->json([
         'success' => false,
         'message' => '削除する画像がありませんでした。'
     ]);
 }
     
-    public function restoreFrames(Request $request, Song $song)
-{
-    \Log::info('Restore frames request received', ['song_id' => $song->id, 'frames' => $request->input('frames')]);
+//     public function restoreFrames(Request $request, Song $song)
+// {
+//     \Log::info('Restore frames request received', ['song_id' => $song->id, 'frames' => $request->input('frames')]);
 
-    $choreography = $song->choreography;
-    if (!$choreography) {
-        \Log::error('Choreography not found for song', ['song_id' => $song->id]);
-        return response()->json(['success' => false, 'message' => '振り付けが見つかりません。'], 404);
-    }
+//     $choreography = $song->choreography;
+//     if (!$choreography) {
+//         \Log::error('Choreography not found for song', ['song_id' => $song->id]);
+//         return response()->json(['success' => false, 'message' => '振り付けが見つかりません。'], 404);
+//     }
 
-    $framesToRestore = $request->input('frames');
-    $frames = json_decode($choreography->frames, true);
+//     $framesToRestore = $request->input('frames');
+//     $frames = json_decode($choreography->frames, true);
 
-    \Log::info('Current frames', ['frames' => $frames]);
+//     \Log::info('Current frames', ['frames' => $frames]);
 
-    $restoredCount = 0;
-    foreach ($framesToRestore as $index) {
-        if (isset($frames[$index])) {
-            if (isset($frames[$index]['deleted']) && $frames[$index]['deleted'] === true) {
-                $frames[$index]['deleted'] = false;
-                $restoredCount++;
-                \Log::info('Frame restored', ['index' => $index]);
-            } else {
-                \Log::info('Frame not marked as deleted', ['index' => $index, 'frame' => $frames[$index]]);
-            }
-        } else {
-            \Log::warning('Frame index not found', ['index' => $index]);
-        }
-    }
+//     $restoredCount = 0;
+//     foreach ($framesToRestore as $index) {
+//         if (isset($frames[$index])) {
+//             if (isset($frames[$index]['deleted']) && $frames[$index]['deleted'] === true) {
+//                 $frames[$index]['deleted'] = false;
+//                 $restoredCount++;
+//                 \Log::info('Frame restored', ['index' => $index]);
+//             } else {
+//                 \Log::info('Frame not marked as deleted', ['index' => $index, 'frame' => $frames[$index]]);
+//             }
+//         } else {
+//             \Log::warning('Frame index not found', ['index' => $index]);
+//         }
+//     }
 
-    \Log::info('Restored frames count', ['count' => $restoredCount]);
+//     \Log::info('Restored frames count', ['count' => $restoredCount]);
 
-    if ($restoredCount > 0) {
-        $choreography->frames = json_encode($frames);
-        $choreography->save();
-        \Log::info('Frames restored successfully', ['restored_count' => $restoredCount]);
-        return response()->json([
-            'success' => true,
-            'message' => $restoredCount . '個の画像が復元されました。'
-        ]);
-    }
+//     if ($restoredCount > 0) {
+//         $choreography->frames = json_encode($frames);
+//         $choreography->save();
+//         \Log::info('Frames restored successfully', ['restored_count' => $restoredCount]);
+//         return response()->json([
+//             'success' => true,
+//             'message' => $restoredCount . '個の画像が復元されました。'
+//         ]);
+//     }
 
-    \Log::warning('No frames restored');
-    return response()->json([
-        'success' => false,
-        'message' => '復元する画像がありませんでした。'
-    ]);
-}
+//     \Log::warning('No frames restored');
+//     return response()->json([
+//         'success' => false,
+//         'message' => '復元する画像がありませんでした。'
+//     ]);
+// }
 
 public function updateLyrics(Request $request, Song $song)
 {

@@ -37,8 +37,8 @@ Route::middleware(['auth'])->group(function () {
             ->name('choreography.delete_video');
         Route::delete('/{song}/delete-frames', [ChoreographyController::class, 'deleteFrames'])
             ->name('choreography.delete_frames');
-        Route::post('/{song}/restore-frames', [ChoreographyController::class, 'restoreFrames'])
-            ->name('choreography.restore_frames');
+        // Route::post('/{song}/restore-frames', [ChoreographyController::class, 'restoreFrames'])
+        //     ->name('choreography.restore_frames');
         Route::post('/{song}/update-lyrics', [ChoreographyController::class, 'updateLyrics'])->name('choreography.update-lyrics');
     });
     
