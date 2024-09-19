@@ -172,32 +172,23 @@
                         
 
                         @if($choreography && $choreography->frames)
-                            <div class="mt-8">
-                                <h2 class="text-2xl font-semibold text-soft-brown mb-4">振り付け一覧</h2>
-                                <!--<button id="toggleSelectMode" class="btn-action btn-select-mode">-->
-                                <!--    不要な画像を削除する-->
-                                <!--</button>-->
                                 
-                                <!--<div id="selectControls" class="mb-4 hidden">-->
-                                <!--    <button id="deleteUnselectedFrames" class="btn-action btn-delete">-->
-                                <!--        選択した画像を削除-->
-                                <!--    </button>-->
-                                    <!--<button id="undoDelete" class="btn-action ml-2 hidden">-->
-                                    <!--    削除した画像を復元-->
-                                    <!--</button>-->
-                                </div>
-                                
-                                <div class="mb-4">
+                               <div class="mb-4">
                                 <h2 class="text-2xl font-semibold text-soft-brown mb-2">歌詞</h2>
-                                <button id="saveLyrics" class="btn-action mt-2">歌詞を保存</button>
                                 <div id="lyricsContainer" class="relative">
                                     <div id="lyricsFrame" class="w-full p-2 border border-soft-brown rounded bg-white bg-opacity-75 whitespace-nowrap overflow-x-auto" contenteditable="true">
                                         {{ $choreography->lyrics_frames ?? '' }}
                                     </div>
                                 </div>
-                                
+                                <div class="flex justify-end mt-2">
+                                    <button id="saveLyrics" class="btn-action">歌詞を保存</button>
+                                </div>
                             </div>
                             
+                             <div class="mt-8">
+                                <h2 class="text-2xl font-semibold text-soft-brown mb-4">振り付け一覧</h2>
+                              </div>
+                                
                                 <div id="frameScroller" class="frame-scroller">
                                     @foreach(json_decode($choreography->frames) as $index => $frame)
                                         <div class="frame-item" data-frame-index="{{ $index }}">
@@ -208,15 +199,15 @@
                                 
                                 <div class="flex justify-end mb-4">
                                     <button id="toggleSelectMode" class="btn-action btn-select-mode">
-                                        不要な画像を削除する
+                                        不要な画像を削除
                                     </button>
                                 </div>
                                 
-                                <div id="selectControls" class="mb-4 hidden">
+                                <div id="selectControls" class="flex justify-end mb-4 hidden">
                                     <button id="deleteUnselectedFrames" class="btn-action btn-delete">
                                         選択した画像を削除
                                     </button>
-                                </div>
+                            </div>
                             </div>
                          @endif
                     @endif
@@ -248,7 +239,7 @@ document.addEventListener('DOMContentLoaded', function() {
             selectMode = !selectMode;
             selectControls.classList.toggle('hidden');
             frameScroller.classList.toggle('selectable');
-            toggleSelectModeButton.textContent = selectMode ? '削除モードを終了' : '不要な画像を削除する';
+            toggleSelectModeButton.textContent = selectMode ? '削除モードを終了' : '不要な画像を削除';
         
             if (!selectMode) {
                 selectedFrames = [];
