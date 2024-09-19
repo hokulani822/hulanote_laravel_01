@@ -175,55 +175,6 @@ class ChoreographyController extends Controller
         'message' => '削除する画像がありませんでした。'
     ]);
 }
-    
-//     public function restoreFrames(Request $request, Song $song)
-// {
-//     \Log::info('Restore frames request received', ['song_id' => $song->id, 'frames' => $request->input('frames')]);
-
-//     $choreography = $song->choreography;
-//     if (!$choreography) {
-//         \Log::error('Choreography not found for song', ['song_id' => $song->id]);
-//         return response()->json(['success' => false, 'message' => '振り付けが見つかりません。'], 404);
-//     }
-
-//     $framesToRestore = $request->input('frames');
-//     $frames = json_decode($choreography->frames, true);
-
-//     \Log::info('Current frames', ['frames' => $frames]);
-
-//     $restoredCount = 0;
-//     foreach ($framesToRestore as $index) {
-//         if (isset($frames[$index])) {
-//             if (isset($frames[$index]['deleted']) && $frames[$index]['deleted'] === true) {
-//                 $frames[$index]['deleted'] = false;
-//                 $restoredCount++;
-//                 \Log::info('Frame restored', ['index' => $index]);
-//             } else {
-//                 \Log::info('Frame not marked as deleted', ['index' => $index, 'frame' => $frames[$index]]);
-//             }
-//         } else {
-//             \Log::warning('Frame index not found', ['index' => $index]);
-//         }
-//     }
-
-//     \Log::info('Restored frames count', ['count' => $restoredCount]);
-
-//     if ($restoredCount > 0) {
-//         $choreography->frames = json_encode($frames);
-//         $choreography->save();
-//         \Log::info('Frames restored successfully', ['restored_count' => $restoredCount]);
-//         return response()->json([
-//             'success' => true,
-//             'message' => $restoredCount . '個の画像が復元されました。'
-//         ]);
-//     }
-
-//     \Log::warning('No frames restored');
-//     return response()->json([
-//         'success' => false,
-//         'message' => '復元する画像がありませんでした。'
-//     ]);
-// }
 
 public function updateLyrics(Request $request, Song $song)
 {

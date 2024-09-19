@@ -169,18 +169,19 @@
                                 @endforeach
                             </div>
                         @endif
+                        
 
                         @if($choreography && $choreography->frames)
                             <div class="mt-8">
                                 <h2 class="text-2xl font-semibold text-soft-brown mb-4">振り付け一覧</h2>
-                                <button id="toggleSelectMode" class="btn-action btn-select-mode">
-                                    不要な画像を削除する
-                                </button>
+                                <!--<button id="toggleSelectMode" class="btn-action btn-select-mode">-->
+                                <!--    不要な画像を削除する-->
+                                <!--</button>-->
                                 
-                                <div id="selectControls" class="mb-4 hidden">
-                                    <button id="deleteUnselectedFrames" class="btn-action btn-delete">
-                                        選択した画像を削除
-                                    </button>
+                                <!--<div id="selectControls" class="mb-4 hidden">-->
+                                <!--    <button id="deleteUnselectedFrames" class="btn-action btn-delete">-->
+                                <!--        選択した画像を削除-->
+                                <!--    </button>-->
                                     <!--<button id="undoDelete" class="btn-action ml-2 hidden">-->
                                     <!--    削除した画像を復元-->
                                     <!--</button>-->
@@ -204,6 +205,18 @@
                                         </div>
                                     @endforeach
                                 </div>
+                                
+                                <div class="flex justify-end mb-4">
+                                    <button id="toggleSelectMode" class="btn-action btn-select-mode">
+                                        不要な画像を削除する
+                                    </button>
+                                </div>
+                                
+                                <div id="selectControls" class="mb-4 hidden">
+                                    <button id="deleteUnselectedFrames" class="btn-action btn-delete">
+                                        選択した画像を削除
+                                    </button>
+                                </div>
                             </div>
                          @endif
                     @endif
@@ -213,9 +226,6 @@
                         <a href="{{ route('songs.show', $song) }}" class="text-soft-brown hover:text-opacity-80 font-bold">
                             ← 曲の詳細に戻る
                         </a>
-                        <!--<a href="{{ route('choreography.edit', $song) }}" class="btn-action">-->
-                        <!--    振り付け情報を編集-->
-                        <!--</a>-->
                     </div>
                 </div>
             </div>
