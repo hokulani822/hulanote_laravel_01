@@ -37,9 +37,8 @@ Route::middleware(['auth'])->group(function () {
             ->name('choreography.delete_video');
         Route::delete('/{song}/delete-frames', [ChoreographyController::class, 'deleteFrames'])
             ->name('choreography.delete_frames');
-        // Route::post('/{song}/restore-frames', [ChoreographyController::class, 'restoreFrames'])
-        //     ->name('choreography.restore_frames');
         Route::post('/{song}/update-lyrics', [ChoreographyController::class, 'updateLyrics'])->name('choreography.update-lyrics');
+        Route::post('/{song}/update-step', [ChoreographyController::class, 'updateStep'])->name('choreography.update-step');
     });
     
     // 振り付け動画関連のルート

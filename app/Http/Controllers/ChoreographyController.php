@@ -193,4 +193,26 @@ public function updateLyrics(Request $request, Song $song)
     ]);
 }
 
+public function updateStep(Request $request, Song $song)
+{
+    $choreography = $song->choreography;
+    if (!$choreography) {
+        return response()->json(['success' => false, 'message' => '振り付けが見つかりません。'], 404);
+    }
+
+    $frameIndex = $request->input('frameIndex');
+    $step = $request->input('step');
+
+    $steps = $choreography->steps ?? [];
+    $steps[$frameIndex] = $step;
+
+    $choreography->steps = $steps;
+    $choreography->save();
+
+    return response()->json([
+        'success' => true,
+        'message' => 'ステップが更新されました。'
+    ]);
+}
+
 }

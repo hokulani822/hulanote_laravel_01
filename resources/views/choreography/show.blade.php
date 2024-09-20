@@ -101,6 +101,16 @@
         .btn-delete:hover {
             background-color: #D32F2F; /* 濃い赤 */
         }
+        
+        .step-info {
+            font-size: 0.8rem;
+            color: #8B7355;
+            min-height: 1.5em;
+        }
+        
+        #stepSelector select, #stepSelector button {
+            font-size: 0.9rem;
+        }
 </style>
   
     <div class="min-h-screen bg-plumeria flex justify-center items-center py-12 px-4">
@@ -173,29 +183,43 @@
                         <!-- 歌詞入力フォーム -->
                         @if($choreography && $choreography->frames)
                                <div class="mb-4">
-                                <h2 class="text-2xl font-semibold text-soft-brown mb-2">歌詞</h2>
+                                <h2 class="text-2xl font-semibold text-soft-brown mb-4">歌詞</h2>
                                 <div id="lyricsContainer" class="relative">
                                 <div id="lyricsFrame" class="w-full p-2 border border-soft-brown rounded bg-white bg-opacity-75 whitespace-nowrap overflow-x-auto" contenteditable="true">
                                     {{ $choreography->lyrics_frames ?? '' }}
                                 </div>
                                 <p id="saveStatus" class="text-sm text-gray-600 mt-2"></p>
                             </div>
-                                <!--<div class="flex justify-end mt-2">-->
-                                <!--    <button id="saveLyrics" class="btn-action">歌詞を保存</button>-->
-                                <!--</div>-->
                             </div>
                                 
                                 <div id="frameScroller" class="frame-scroller">
-                                    @foreach(json_decode($choreography->frames) as $index => $frame)
-                                        <div class="frame-item" data-frame-index="{{ $index }}">
-                                            <img src="{{ secure_asset('storage/' . $frame->frame_url) }}" alt="Frame at {{ $frame->timestamp }}s" class="frame-image">
+                                @foreach(json_decode($choreography->frames) as $index => $frame)
+                                    <div class="frame-item" data-frame-index="{{ $index }}">
+                                        <img src="{{ secure_asset('storage/' . $frame->frame_url) }}" alt="Frame at {{ $frame->timestamp }}s" class="frame-image">
+                                        <div class="step-info text-center mt-2" id="step-{{ $index }}">
+                                            {{ $choreography->steps[$index] ?? '' }}
                                         </div>
-                                    @endforeach
-                                </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                            <div id="stepSelector" class="hidden mt-4">
+                                <select id="stepOptions" class="mr-2 p-2 border rounded">
+                                    <option value="">ステップを選択</option>
+                                    <option value="右足前">右足前</option>
+                                    <option value="左足前">左足前</option>
+                                    <option value="右足後ろ">右足後ろ</option>
+                                    <option value="左足後ろ">左足後ろ</option>
+                                    <!-- 他のステップオプションを追加 -->
+                                </select>
+                                <button id="applyStep" class="btn-action">適用</button>
+                            </div>
                                 
                                 <div class="flex justify-end mb-4">
                                     <button id="toggleSelectMode" class="btn-action btn-select-mode">
                                         不要な画像を削除
+                                    </button>
+                                    <button id="toggleStepMode" class="btn-action btn-select-mode">
+                                        ステップを追加
                                     </button>
                                 </div>
                                 
@@ -222,22 +246,32 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const toggleSelectModeButton = document.getElementById('toggleSelectMode');
+    const toggleStepModeButton = document.getElementById('toggleStepMode');
     const selectControls = document.getElementById('selectControls');
     const deleteButton = document.getElementById('deleteUnselectedFrames');
     const frameScroller = document.getElementById('frameScroller');
     const lyricsFrame = document.getElementById('lyricsFrame');
     const saveStatus = document.getElementById('saveStatus');
+    const stepSelector = document.getElementById('stepSelector');
+    const stepOptions = document.getElementById('stepOptions');
+    const applyStepButton = document.getElementById('applyStep');
     let selectMode = false;
+    let stepMode = false;
     let selectedFrames = [];
+    let selectedStepFrame = null;
     let timeoutId;
 
     if (toggleSelectModeButton && selectControls && deleteButton && frameScroller) {
         toggleSelectModeButton.addEventListener('click', function() {
             selectMode = !selectMode;
+            stepMode = false; // ステップモードがオンの場合はオフにする
             selectControls.classList.toggle('hidden');
             frameScroller.classList.toggle('selectable');
             toggleSelectModeButton.textContent = selectMode ? '削除モードを終了' : '不要な画像を削除';
+            stepSelector.classList.add('hidden'); // 削除モード中はステップセレクタを非表示
         
+            console.log('削除モード:', selectMode ? 'オン' : 'オフ');
+
             if (!selectMode) {
                 selectedFrames = [];
                 document.querySelectorAll('.frame-item.selected').forEach(item => {
@@ -246,16 +280,42 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
+        toggleStepModeButton.addEventListener('click', function() {
+            stepMode = !stepMode;
+            selectMode = false; // 削除モードがオンの場合はオフにする
+            stepSelector.classList.toggle('hidden');
+            frameScroller.classList.toggle('selectable');
+            toggleStepModeButton.textContent = stepMode ? 'ステップ追加モードを終了' : 'ステップを追加';
+            selectControls.classList.add('hidden'); // ステップモード中は削除コントロールを非表示
+        
+            console.log('ステップモード:', stepMode ? 'オン' : 'オフ');
+
+            if (!stepMode) {
+                if (selectedStepFrame) {
+                    selectedStepFrame.classList.remove('selected');
+                    selectedStepFrame = null;
+                }
+            }
+        });
+
         frameScroller.addEventListener('click', function(e) {
-            if (!selectMode) return;
+            if (!selectMode && !stepMode) return;
             
             const frameItem = e.target.closest('.frame-item');
             if (frameItem) {
-                const frameIndex = parseInt(frameItem.dataset.frameIndex);
-                if (frameItem.classList.toggle('selected')) {
-                    selectedFrames.push(frameIndex);
-                } else {
-                    selectedFrames = selectedFrames.filter(index => index !== frameIndex);
+                if (selectMode) {
+                    const frameIndex = parseInt(frameItem.dataset.frameIndex);
+                    if (frameItem.classList.toggle('selected')) {
+                        selectedFrames.push(frameIndex);
+                    } else {
+                        selectedFrames = selectedFrames.filter(index => index !== frameIndex);
+                    }
+                    console.log('選択されたフレーム:', selectedFrames);
+                } else if (stepMode) {
+                    if (selectedStepFrame) selectedStepFrame.classList.remove('selected');
+                    frameItem.classList.add('selected');
+                    selectedStepFrame = frameItem;
+                    console.log('ステップ用に選択されたフレーム:', frameItem.dataset.frameIndex);
                 }
             }
         });
@@ -295,7 +355,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 })
                 .catch(error => {
-                    console.error('Error:', error);
+                    console.error('エラー:', error);
                     alert('画像の削除中にエラーが発生しました。');
                 });
             }
@@ -345,7 +405,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         })
         .catch(error => {
-            console.error('Error:', error);
+            console.error('エラー:', error);
             saveStatus.textContent = '保存に失敗しました';
         });
     }
@@ -386,7 +446,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         alert(response.message || 'アップロードに失敗しました。もう一度お試しください。');
                     }
                 } catch (e) {
-                    console.error('Error parsing JSON:', e);
+                    console.error('JSONの解析エラー:', e);
                     alert('予期せぬエラーが発生しました。開発者ツールでエラー詳細を確認してください。');
                 }
             };
@@ -420,12 +480,71 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 })
                 .catch(error => {
-                    console.error('Error:', error);
+                    console.error('エラー:', error);
                     alert('動画の削除中にエラーが発生しました。');
                 });
             }
         });
     });
+
+    applyStepButton.addEventListener('click', function() {
+        console.log('適用ボタンがクリックされました');
+        if (!selectedStepFrame) {
+            console.log('フレームが選択されていません');
+            return;
+        }
+        if (!stepOptions.value) {
+            console.log('ステップが選択されていません');
+            return;
+        }
+        
+        const frameIndex = selectedStepFrame.dataset.frameIndex;
+        const step = stepOptions.value;
+        
+        console.log('選択されたフレーム:', frameIndex);
+        console.log('選択されたステップ:', step);
+        
+        // UIを更新
+        const stepInfo = selectedStepFrame.querySelector('.step-info');
+        if (stepInfo) {
+            stepInfo.textContent = step;
+            console.log('UIが更新されました');
+        } else {
+            console.log('.step-info 要素が見つかりません');
+        }
+        
+        // サーバーにデータを送信
+        updateStep(frameIndex, step);
+        
+        // 選択をリセット
+        selectedStepFrame.classList.remove('selected');
+        selectedStepFrame = null;
+        stepOptions.value = '';
+    });
+
+    function updateStep(frameIndex, step) {
+        const songId = '{{ $song->id }}';
+        console.log('updateStep が呼び出されました:', frameIndex, step);
+        fetch(`/choreography/${songId}/update-step`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ frameIndex, step })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log('ステップが正常に更新されました:', data);
+            } else {
+                console.error('ステップの更新に失敗しました:', data);
+            }
+        })
+        .catch(error => {
+            console.error('エラー:', error);
+        });
+    }
 });
 </script>
 </x-app-layout>

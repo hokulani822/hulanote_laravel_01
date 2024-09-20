@@ -20,6 +20,7 @@ class Choreography extends Model
     protected $casts = [
         'frames' => 'array',
         'lyrics_frames' => 'array',
+        'steps' => 'array',
     ];
 
     public function song()
