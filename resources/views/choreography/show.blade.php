@@ -20,30 +20,48 @@
             width: 95%;
             max-width: 1200px;
         }
+        
         .frame-scroller {
             display: flex;
             overflow-x: auto;
             gap: 0.75rem;
             padding: 1rem 0;
             scroll-snap-type: x mandatory;
+            height: 300px; /* 適切な高さに調整してください */
         }
+        
         .frame-item {
             flex: 0 0 auto;
             width: 120px;
-            aspect-ratio: 9 / 16;
+            max-height: 280px; /* frame-scrollerの高さより少し小さく */
+            overflow-y: auto; /* 縦方向にスクロール可能に */
             scroll-snap-align: start;
-            overflow: hidden;
+            margin-bottom: 10px;
             border-radius: 0.25rem;
             box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.06);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 5px solid transparent;
         }
+        
         .frame-item img {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
+        
+       .frame-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 120px;
+            height: auto; /* 高さを自動調整 */
+            margin-bottom: 10px;
+        }
+        
+       .frame-image {
+            width: 100%;
+            height: auto;
+            margin-bottom: 5px;
+        }
+
         .selectable .frame-item {
             transition: all 0.3s ease, opacity 0.3s ease;
         }
@@ -103,9 +121,16 @@
         }
         
         .step-info {
-            font-size: 0.8rem;
+            width: 100%;
+            text-align: center;
+            padding: 5px;
+            background-color: rgba(210, 180, 140, 0.1);
+            border: 1px solid #8B7355;
+            border-radius: 4px;
+            font-size: 12px;
             color: #8B7355;
-            min-height: 1.5em;
+            min-height: 25px;
+            overflow-wrap: break-word; /* 長い単語を折り返す */
         }
         
         #stepSelector select, #stepSelector button {
@@ -195,20 +220,20 @@
                                 <div id="frameScroller" class="frame-scroller">
                                 @foreach(json_decode($choreography->frames) as $index => $frame)
                                     <div class="frame-item" data-frame-index="{{ $index }}">
-                                        <img src="{{ secure_asset('storage/' . $frame->frame_url) }}" alt="Frame at {{ $frame->timestamp }}s" class="frame-image">
-                                        <div class="step-info text-center mt-2" id="step-{{ $index }}">
-                                            {{ $choreography->steps[$index] ?? '' }}
-                                        </div>
+                                    <img src="{{ secure_asset('storage/' . $frame->frame_url) }}" alt="Frame at {{ $frame->timestamp }}s" class="frame-image">
+                                    <div class="step-info" id="step-{{ $index }}">
+                                        {{ $choreography->steps[$index] ?? '' }}
                                     </div>
-                                @endforeach
+                                </div>
+                                 @endforeach
                             </div>
                             <div id="stepSelector" class="hidden mt-4">
                                 <select id="stepOptions" class="mr-2 p-2 border rounded">
                                     <option value="">ステップを選択</option>
-                                    <option value="右足前">右足前</option>
-                                    <option value="左足前">左足前</option>
-                                    <option value="右足後ろ">右足後ろ</option>
-                                    <option value="左足後ろ">左足後ろ</option>
+                                    <option value="カホロ">カホロ</option>
+                                    <option value="カオ">カオ</option>
+                                    <option value="アミ">アミ</option>
+                                    <option value="ウエへ">ウエへ</option>
                                     <!-- 他のステップオプションを追加 -->
                                 </select>
                                 <button id="applyStep" class="btn-action">適用</button>
