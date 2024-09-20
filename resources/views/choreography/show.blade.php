@@ -170,24 +170,20 @@
                             </div>
                         @endif
                         
-
+                        <!-- 歌詞入力フォーム -->
                         @if($choreography && $choreography->frames)
-                                
                                <div class="mb-4">
                                 <h2 class="text-2xl font-semibold text-soft-brown mb-2">歌詞</h2>
                                 <div id="lyricsContainer" class="relative">
-                                    <div id="lyricsFrame" class="w-full p-2 border border-soft-brown rounded bg-white bg-opacity-75 whitespace-nowrap overflow-x-auto" contenteditable="true">
-                                        {{ $choreography->lyrics_frames ?? '' }}
-                                    </div>
+                                <div id="lyricsFrame" class="w-full p-2 border border-soft-brown rounded bg-white bg-opacity-75 whitespace-nowrap overflow-x-auto" contenteditable="true">
+                                    {{ $choreography->lyrics_frames ?? '' }}
                                 </div>
-                                <div class="flex justify-end mt-2">
-                                    <button id="saveLyrics" class="btn-action">歌詞を保存</button>
-                                </div>
+                                <p id="saveStatus" class="text-sm text-gray-600 mt-2"></p>
                             </div>
-                            
-                             <div class="mt-8">
-                                <h2 class="text-2xl font-semibold text-soft-brown mb-4">振り付け一覧</h2>
-                              </div>
+                                <!--<div class="flex justify-end mt-2">-->
+                                <!--    <button id="saveLyrics" class="btn-action">歌詞を保存</button>-->
+                                <!--</div>-->
+                            </div>
                                 
                                 <div id="frameScroller" class="frame-scroller">
                                     @foreach(json_decode($choreography->frames) as $index => $frame)
@@ -230,9 +226,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const deleteButton = document.getElementById('deleteUnselectedFrames');
     const frameScroller = document.getElementById('frameScroller');
     const lyricsFrame = document.getElementById('lyricsFrame');
-    const saveLyricsButton = document.getElementById('saveLyrics');
+    const saveStatus = document.getElementById('saveStatus');
     let selectMode = false;
     let selectedFrames = [];
+    let timeoutId;
 
     if (toggleSelectModeButton && selectControls && deleteButton && frameScroller) {
         toggleSelectModeButton.addEventListener('click', function() {
@@ -292,7 +289,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         });
                         selectedFrames = [];
                         alert(data.message);
-                        // 削除後にフレームのインデックスを更新
                         updateFrameIndices();
                     } else {
                         alert('画像の削除中にエラーが発生しました: ' + data.message);
@@ -306,7 +302,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // 歌詞と画像フレームの連携
     if (lyricsFrame && frameScroller) {
         frameScroller.addEventListener('scroll', function() {
             lyricsFrame.scrollLeft = frameScroller.scrollLeft;
@@ -315,11 +310,18 @@ document.addEventListener('DOMContentLoaded', function() {
         lyricsFrame.addEventListener('scroll', function() {
             frameScroller.scrollLeft = lyricsFrame.scrollLeft;
         });
+
+        lyricsFrame.addEventListener('input', function() {
+            clearTimeout(timeoutId);
+            saveStatus.textContent = '保存中...';
+            
+            timeoutId = setTimeout(function() {
+                saveLyrics();
+            }, 1000); // 1秒後に保存
+        });
     }
 
-    // 歌詞保存機能
-    if (saveLyricsButton) {
-       saveLyricsButton.addEventListener('click', function() {
+    function saveLyrics() {
         const songId = '{{ $song->id }}';
         const lyrics = lyricsFrame.textContent;
 
@@ -334,68 +336,67 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert(data.message);
+                saveStatus.textContent = '保存しました';
+                setTimeout(() => {
+                    saveStatus.textContent = '';
+                }, 2000); // 2秒後にステータスメッセージを消す
             } else {
-                alert('歌詞の保存中にエラーが発生しました。');
+                saveStatus.textContent = '保存に失敗しました';
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('歌詞の保存中にエラーが発生しました。');
+            saveStatus.textContent = '保存に失敗しました';
         });
-    });
-}
+    }
 
-    // フレームのインデックスを更新する関数
     function updateFrameIndices() {
         document.querySelectorAll('.frame-item').forEach((item, index) => {
             item.dataset.frameIndex = index;
         });
     }
     
-    //動画アップロード
     const videoUploadForm = document.getElementById('videoUploadForm');
     if (videoUploadForm) {
-            videoUploadForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                var formData = new FormData(this);
-                var xhr = new XMLHttpRequest();
-                var progressBarContainer = document.getElementById('progressBarContainer');
-                var progressBar = document.getElementById('progressBar');
-                var progressText = document.getElementById('progressText');
+        videoUploadForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            var formData = new FormData(this);
+            var xhr = new XMLHttpRequest();
+            var progressBarContainer = document.getElementById('progressBarContainer');
+            var progressBar = document.getElementById('progressBar');
+            var progressText = document.getElementById('progressText');
 
-                xhr.open('POST', this.action, true);
-                xhr.upload.onprogress = function(e) {
-                    if (e.lengthComputable) {
-                        var percentComplete = (e.loaded / e.total) * 100;
-                        progressBar.style.width = percentComplete + '%';
-                        progressText.textContent = percentComplete.toFixed(2) + '%';
-                        progressBarContainer.classList.remove('hidden');
+            xhr.open('POST', this.action, true);
+            xhr.upload.onprogress = function(e) {
+                if (e.lengthComputable) {
+                    var percentComplete = (e.loaded / e.total) * 100;
+                    progressBar.style.width = percentComplete + '%';
+                    progressText.textContent = percentComplete.toFixed(2) + '%';
+                    progressBarContainer.classList.remove('hidden');
+                }
+            };
+            xhr.onload = function() {
+                try {
+                    var response = JSON.parse(xhr.responseText);
+                    if (xhr.status === 200 && response.success) {
+                        alert(response.message);
+                        window.location.reload();
+                    } else {
+                        alert(response.message || 'アップロードに失敗しました。もう一度お試しください。');
                     }
-                };
-                xhr.onload = function() {
-                    try {
-                        var response = JSON.parse(xhr.responseText);
-                        if (xhr.status === 200 && response.success) {
-                            alert(response.message);
-                            window.location.reload();
-                        } else {
-                            alert(response.message || 'アップロードに失敗しました。もう一度お試しください。');
-                        }
-                    } catch (e) {
-                        console.error('Error parsing JSON:', e);
-                        alert('予期せぬエラーが発生しました。開発者ツールでエラー詳細を確認してください。');
-                    }
-                };
-                xhr.onerror = function() {
-                    alert('ネットワークエラーが発生しました。接続を確認して再度お試しください。');
-                };
-                xhr.send(formData);
-            });
-        }
+                } catch (e) {
+                    console.error('Error parsing JSON:', e);
+                    alert('予期せぬエラーが発生しました。開発者ツールでエラー詳細を確認してください。');
+                }
+            };
+            xhr.onerror = function() {
+                alert('ネットワークエラーが発生しました。接続を確認して再度お試しください。');
+            };
+            xhr.send(formData);
+        });
+    }
 
-    // 動画削除機能
     document.querySelectorAll('.delete-video').forEach(button => {
         button.addEventListener('click', function() {
             const videoId = this.dataset.videoId;
@@ -413,7 +414,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(data => {
                     if (data.success) {
                         alert(data.message);
-                        // 動画要素を画面から削除
                         this.closest('.video-wrapper').remove();
                     } else {
                         alert('動画の削除中にエラーが発生しました: ' + data.message);
