@@ -231,11 +231,16 @@
                                 <select id="stepOptions" class="mr-2 p-2 border rounded">
                                     <option value="">ステップを選択</option>
                                     <option value="カホロ">カホロ</option>
+                                    <option value="ヘラ">ヘラ</option>
                                     <option value="カオ">カオ</option>
                                     <option value="アミ">アミ</option>
                                     <option value="ウエへ">ウエへ</option>
+                                    <option value="レレウエへ">レレウエへ</option>
+                                    <option value="カラカウア">カラカウア</option>
                                     <!-- 他のステップオプションを追加 -->
+                                    <option value="その他">その他</option>
                                 </select>
+                                <input type="text" id="customStep" class="mr-2 p-2 border rounded hidden" placeholder="ステップを入力">
                                 <button id="applyStep" class="btn-action">適用</button>
                             </div>
                                 
@@ -279,6 +284,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const saveStatus = document.getElementById('saveStatus');
     const stepSelector = document.getElementById('stepSelector');
     const stepOptions = document.getElementById('stepOptions');
+    const customStepInput = document.getElementById('customStep');
     const applyStepButton = document.getElementById('applyStep');
     let selectMode = false;
     let stepMode = false;
@@ -289,12 +295,13 @@ document.addEventListener('DOMContentLoaded', function() {
     if (toggleSelectModeButton && selectControls && deleteButton && frameScroller) {
         toggleSelectModeButton.addEventListener('click', function() {
             selectMode = !selectMode;
-            stepMode = false; // ステップモードがオンの場合はオフにする
+            stepMode = false;
             selectControls.classList.toggle('hidden');
             frameScroller.classList.toggle('selectable');
             toggleSelectModeButton.textContent = selectMode ? '削除モードを終了' : '不要な画像を削除';
-            stepSelector.classList.add('hidden'); // 削除モード中はステップセレクタを非表示
-        
+            stepSelector.classList.add('hidden');
+            toggleStepModeButton.textContent = 'ステップを追加';
+            
             console.log('削除モード:', selectMode ? 'オン' : 'オフ');
 
             if (!selectMode) {
@@ -307,12 +314,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
         toggleStepModeButton.addEventListener('click', function() {
             stepMode = !stepMode;
-            selectMode = false; // 削除モードがオンの場合はオフにする
+            selectMode = false;
             stepSelector.classList.toggle('hidden');
             frameScroller.classList.toggle('selectable');
             toggleStepModeButton.textContent = stepMode ? 'ステップ追加モードを終了' : 'ステップを追加';
-            selectControls.classList.add('hidden'); // ステップモード中は削除コントロールを非表示
-        
+            selectControls.classList.add('hidden');
+            toggleSelectModeButton.textContent = '不要な画像を削除';
+
             console.log('ステップモード:', stepMode ? 'オン' : 'オフ');
 
             if (!stepMode) {
@@ -324,24 +332,22 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         frameScroller.addEventListener('click', function(e) {
-            if (!selectMode && !stepMode) return;
-            
             const frameItem = e.target.closest('.frame-item');
-            if (frameItem) {
-                if (selectMode) {
-                    const frameIndex = parseInt(frameItem.dataset.frameIndex);
-                    if (frameItem.classList.toggle('selected')) {
-                        selectedFrames.push(frameIndex);
-                    } else {
-                        selectedFrames = selectedFrames.filter(index => index !== frameIndex);
-                    }
-                    console.log('選択されたフレーム:', selectedFrames);
-                } else if (stepMode) {
-                    if (selectedStepFrame) selectedStepFrame.classList.remove('selected');
-                    frameItem.classList.add('selected');
-                    selectedStepFrame = frameItem;
-                    console.log('ステップ用に選択されたフレーム:', frameItem.dataset.frameIndex);
+            if (!frameItem) return;
+
+            if (selectMode) {
+                const frameIndex = parseInt(frameItem.dataset.frameIndex);
+                if (frameItem.classList.toggle('selected')) {
+                    selectedFrames.push(frameIndex);
+                } else {
+                    selectedFrames = selectedFrames.filter(index => index !== frameIndex);
                 }
+                console.log('選択されたフレーム:', selectedFrames);
+            } else if (stepMode) {
+                if (selectedStepFrame) selectedStepFrame.classList.remove('selected');
+                frameItem.classList.add('selected');
+                selectedStepFrame = frameItem;
+                console.log('ステップ用に選択されたフレーム:', frameItem.dataset.frameIndex);
             }
         });
 
@@ -402,7 +408,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             timeoutId = setTimeout(function() {
                 saveLyrics();
-            }, 1000); // 1秒後に保存
+            }, 1000);
         });
     }
 
@@ -424,7 +430,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 saveStatus.textContent = '保存しました';
                 setTimeout(() => {
                     saveStatus.textContent = '';
-                }, 2000); // 2秒後にステータスメッセージを消す
+                }, 2000);
             } else {
                 saveStatus.textContent = '保存に失敗しました';
             }
@@ -440,7 +446,84 @@ document.addEventListener('DOMContentLoaded', function() {
             item.dataset.frameIndex = index;
         });
     }
-    
+
+    stepOptions.addEventListener('change', function() {
+        if (this.value === 'その他') {
+            customStepInput.classList.remove('hidden');
+        } else {
+            customStepInput.classList.add('hidden');
+        }
+    });
+
+    applyStepButton.addEventListener('click', function() {
+        console.log('適用ボタンがクリックされました');
+        if (!selectedStepFrame) {
+            console.log('フレームが選択されていません');
+            return;
+        }
+        if (!stepOptions.value) {
+            console.log('ステップが選択されていません');
+            return;
+        }
+        
+        const frameIndex = selectedStepFrame.dataset.frameIndex;
+        let step = stepOptions.value;
+        if (step === 'その他') {
+            step = customStepInput.value;
+            if (!step) {
+                console.log('カスタムステップが入力されていません');
+                return;
+            }
+        }
+        
+        console.log('選択されたフレーム:', frameIndex);
+        console.log('選択されたステップ:', step);
+        
+        // UIを更新
+        const stepInfo = selectedStepFrame.querySelector('.step-info');
+        if (stepInfo) {
+            stepInfo.textContent = step;
+            console.log('UIが更新されました');
+        } else {
+            console.log('.step-info 要素が見つかりません');
+        }
+        
+        // サーバーにデータを送信
+        updateStep(frameIndex, step);
+        
+        // 選択をリセット
+        selectedStepFrame.classList.remove('selected');
+        selectedStepFrame = null;
+        stepOptions.value = '';
+        customStepInput.value = '';
+        customStepInput.classList.add('hidden');
+    });
+
+    function updateStep(frameIndex, step) {
+        const songId = '{{ $song->id }}';
+        console.log('updateStep が呼び出されました:', frameIndex, step);
+        fetch(`/choreography/${songId}/update-step`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ frameIndex, step })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log('ステップが正常に更新されました:', data);
+            } else {
+                console.error('ステップの更新に失敗しました:', data);
+            }
+        })
+        .catch(error => {
+            console.error('エラー:', error);
+        });
+    }
+
+    // 動画アップロード関連のコード（既存のコード）
     const videoUploadForm = document.getElementById('videoUploadForm');
     if (videoUploadForm) {
         videoUploadForm.addEventListener('submit', function(e) {
@@ -482,6 +565,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // 動画削除関連のコード（既存のコード）
     document.querySelectorAll('.delete-video').forEach(button => {
         button.addEventListener('click', function() {
             const videoId = this.dataset.videoId;
@@ -511,65 +595,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
-
-    applyStepButton.addEventListener('click', function() {
-        console.log('適用ボタンがクリックされました');
-        if (!selectedStepFrame) {
-            console.log('フレームが選択されていません');
-            return;
-        }
-        if (!stepOptions.value) {
-            console.log('ステップが選択されていません');
-            return;
-        }
-        
-        const frameIndex = selectedStepFrame.dataset.frameIndex;
-        const step = stepOptions.value;
-        
-        console.log('選択されたフレーム:', frameIndex);
-        console.log('選択されたステップ:', step);
-        
-        // UIを更新
-        const stepInfo = selectedStepFrame.querySelector('.step-info');
-        if (stepInfo) {
-            stepInfo.textContent = step;
-            console.log('UIが更新されました');
-        } else {
-            console.log('.step-info 要素が見つかりません');
-        }
-        
-        // サーバーにデータを送信
-        updateStep(frameIndex, step);
-        
-        // 選択をリセット
-        selectedStepFrame.classList.remove('selected');
-        selectedStepFrame = null;
-        stepOptions.value = '';
-    });
-
-    function updateStep(frameIndex, step) {
-        const songId = '{{ $song->id }}';
-        console.log('updateStep が呼び出されました:', frameIndex, step);
-        fetch(`/choreography/${songId}/update-step`, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ frameIndex, step })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                console.log('ステップが正常に更新されました:', data);
-            } else {
-                console.error('ステップの更新に失敗しました:', data);
-            }
-        })
-        .catch(error => {
-            console.error('エラー:', error);
-        });
-    }
 });
 </script>
 </x-app-layout>
