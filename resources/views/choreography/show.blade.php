@@ -194,7 +194,6 @@
                                         <div class="flex justify-between items-center mt-2">
                                             <div>
                                                 <p class="text-sm text-gray-600">アップロード日時: {{ $video->created_at }}</p>
-                                                <p class="text-sm text-gray-600">AI編集: {{ $video->ai_edited ? '完了' : '処理中' }}</p>
                                             </div>
                                             <button class="delete-video btn-action btn-delete" data-video-id="{{ $video->id }}">
                                                 動画を削除
@@ -289,7 +288,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let selectMode = false;
     let stepMode = false;
     let selectedFrames = [];
-    let selectedStepFrame = null;
+    let selectedStepFrames = [];
     let timeoutId;
 
     if (toggleSelectModeButton && selectControls && deleteButton && frameScroller) {
@@ -324,10 +323,8 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('ステップモード:', stepMode ? 'オン' : 'オフ');
 
             if (!stepMode) {
-                if (selectedStepFrame) {
-                    selectedStepFrame.classList.remove('selected');
-                    selectedStepFrame = null;
-                }
+                selectedStepFrames.forEach(frame => frame.classList.remove('selected'));
+                selectedStepFrames = [];
             }
         });
 
@@ -344,10 +341,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 console.log('選択されたフレーム:', selectedFrames);
             } else if (stepMode) {
-                if (selectedStepFrame) selectedStepFrame.classList.remove('selected');
-                frameItem.classList.add('selected');
-                selectedStepFrame = frameItem;
-                console.log('ステップ用に選択されたフレーム:', frameItem.dataset.frameIndex);
+                frameItem.classList.toggle('selected');
+                if (frameItem.classList.contains('selected')) {
+                    selectedStepFrames.push(frameItem);
+                } else {
+                    selectedStepFrames = selectedStepFrames.filter(frame => frame !== frameItem);
+                }
+                console.log('ステップ用に選択されたフレーム:', selectedStepFrames.map(frame => frame.dataset.frameIndex));
             }
         });
 
@@ -457,7 +457,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     applyStepButton.addEventListener('click', function() {
         console.log('適用ボタンがクリックされました');
-        if (!selectedStepFrame) {
+        if (selectedStepFrames.length === 0) {
             console.log('フレームが選択されていません');
             return;
         }
@@ -466,7 +466,6 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        const frameIndex = selectedStepFrame.dataset.frameIndex;
         let step = stepOptions.value;
         if (step === 'その他') {
             step = customStepInput.value;
@@ -476,39 +475,38 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        console.log('選択されたフレーム:', frameIndex);
+        console.log('選択されたフレーム:', selectedStepFrames.map(frame => frame.dataset.frameIndex));
         console.log('選択されたステップ:', step);
         
         // UIを更新
-        const stepInfo = selectedStepFrame.querySelector('.step-info');
-        if (stepInfo) {
-            stepInfo.textContent = step;
-            console.log('UIが更新されました');
-        } else {
-            console.log('.step-info 要素が見つかりません');
-        }
+        selectedStepFrames.forEach(frame => {
+            const stepInfo = frame.querySelector('.step-info');
+            if (stepInfo) {
+                stepInfo.textContent = step;
+            }
+        });
         
         // サーバーにデータを送信
-        updateStep(frameIndex, step);
+        updateSteps(selectedStepFrames.map(frame => frame.dataset.frameIndex), step);
         
         // 選択をリセット
-        selectedStepFrame.classList.remove('selected');
-        selectedStepFrame = null;
+        selectedStepFrames.forEach(frame => frame.classList.remove('selected'));
+        selectedStepFrames = [];
         stepOptions.value = '';
         customStepInput.value = '';
         customStepInput.classList.add('hidden');
     });
 
-    function updateStep(frameIndex, step) {
+    function updateSteps(frameIndices, step) {
         const songId = '{{ $song->id }}';
-        console.log('updateStep が呼び出されました:', frameIndex, step);
-        fetch(`/choreography/${songId}/update-step`, {
+        console.log('updateSteps が呼び出されました:', frameIndices, step);
+        fetch(`/choreography/${songId}/update-steps`, {
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ frameIndex, step })
+            body: JSON.stringify({ frameIndices, step })
         })
         .then(response => response.json())
         .then(data => {
