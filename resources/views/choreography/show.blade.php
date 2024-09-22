@@ -126,20 +126,22 @@
             padding: 5px;
             border-radius: 4px;
             font-size: 12px;
-            color: #ffffff;
+            font-weight: 600; /* 文字を太く */
+            color: #333333;
             min-height: 25px;
             overflow-wrap: break-word;
             transition: background-color 0.3s ease;
+            background-color: #ffffff; /* デフォルトの背景色を白に設定 */
         }
         
-        .step-kaholo { background-color: #8B7355; }
-        .step-hela { background-color: #D2B48C; }
-        .step-kao { background-color: #DEB887; }
-        .step-ami { background-color: #CD853F; }
-        .step-uwehe { background-color: #D2691E; }
-        .step-lele-uwehe { background-color: #8B4513; }
-        .step-kalakaua { background-color: #A0522D; }
-        .step-other { background-color: #6B8E23; }
+        .step-kaholo { background-color: #F4CCCC; } /* 明るいくすみピンク */
+        .step-hela { background-color: #D9EAD3; } /* 明るいくすみグリーン */
+        .step-kao { background-color: #CFE2F3; } /* 明るいくすみブルー */
+        .step-ami { background-color: #FFF2CC; } /* 明るいくすみイエロー */
+        .step-uwehe { background-color: #FCE5CD; } /* 明るいくすみオレンジ */
+        .step-lele-uwehe { background-color: #EAD1DC; } /* 明るいくすみローズ */
+        .step-kalakaua { background-color: #D9D2E9; } /* 明るいくすみライラック */
+        .step-other { background-color: #E6E6E6; } /* 明るいくすみグレー */
         
         #stepSelector select, #stepSelector button {
             font-size: 0.9rem;
@@ -301,19 +303,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 既存のステップ情報を色分け
     document.querySelectorAll('.step-info').forEach(stepInfo => {
-        const step = stepInfo.textContent.trim().toLowerCase();
-        let stepClass;
-        switch(step) {
-            case 'カホロ': stepClass = 'step-kaholo'; break;
-            case 'ヘラ': stepClass = 'step-hela'; break;
-            case 'カオ': stepClass = 'step-kao'; break;
-            case 'アミ': stepClass = 'step-ami'; break;
-            case 'ウエへ': stepClass = 'step-uwehe'; break;
-            case 'レレウエへ': stepClass = 'step-lele-uwehe'; break;
-            case 'カラカウア': stepClass = 'step-kalakaua'; break;
-            default: stepClass = 'step-other';
+        const step = stepInfo.textContent.trim();
+        if (step) {
+            let stepClass = getStepClass(step);
+            stepInfo.classList.add(stepClass);
+        } else {
+            // ステップが設定されていない場合、全てのステップクラスを削除
+            stepInfo.className = 'step-info';
         }
-        stepInfo.classList.add(stepClass);
     });
 
     if (toggleSelectModeButton && selectControls && deleteButton && frameScroller) {
@@ -519,24 +516,18 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('updateSteps が呼び出されました:', frameIndices, step);
 
         // ステップに対応するクラス名を決定
-        let stepClass;
-        switch(step.toLowerCase()) {
-            case 'カホロ': stepClass = 'step-kaholo'; break;
-            case 'ヘラ': stepClass = 'step-hela'; break;
-            case 'カオ': stepClass = 'step-kao'; break;
-            case 'アミ': stepClass = 'step-ami'; break;
-            case 'ウエへ': stepClass = 'step-uwehe'; break;
-            case 'レレウエへ': stepClass = 'step-lele-uwehe'; break;
-            case 'カラカウア': stepClass = 'step-kalakaua'; break;
-            default: stepClass = 'step-other';
-        }
+        let stepClass = getStepClass(step);
 
         // UIを更新
         selectedStepFrames.forEach(frame => {
             const stepInfo = frame.querySelector('.step-info');
             if (stepInfo) {
                 stepInfo.textContent = step;
-                stepInfo.className = 'step-info ' + stepClass;
+                // 全てのステップクラスを削除し、新しいクラスを追加
+                stepInfo.className = 'step-info';
+                if (stepClass) {
+                    stepInfo.classList.add(stepClass);
+                }
             }
         });
 
@@ -559,6 +550,20 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(error => {
             console.error('エラー:', error);
         });
+    }
+
+    function getStepClass(step) {
+        switch(step.toLowerCase()) {
+            case 'カホロ': return 'step-kaholo';
+            case 'ヘラ': return 'step-hela';
+            case 'カオ': return 'step-kao';
+            case 'アミ': return 'step-ami';
+            case 'ウエへ': return 'step-uwehe';
+            case 'レレウエへ': return 'step-lele-uwehe';
+            case 'カラカウア': return 'step-kalakaua';
+            case '': return ''; // 空の場合はクラスを追加しない
+            default: return step ? 'step-other' : ''; // ステップが設定されている場合のみ 'step-other' を返す
+        }
     }
 
     // 動画アップロード関連のコード（既存のコード）
