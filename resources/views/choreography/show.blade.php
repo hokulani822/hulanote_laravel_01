@@ -124,14 +124,22 @@
             width: 100%;
             text-align: center;
             padding: 5px;
-            background-color: rgba(210, 180, 140, 0.1);
-            border: 1px solid #8B7355;
             border-radius: 4px;
             font-size: 12px;
-            color: #8B7355;
+            color: #ffffff;
             min-height: 25px;
-            overflow-wrap: break-word; /* 長い単語を折り返す */
+            overflow-wrap: break-word;
+            transition: background-color 0.3s ease;
         }
+        
+        .step-kaholo { background-color: #8B7355; }
+        .step-hela { background-color: #D2B48C; }
+        .step-kao { background-color: #DEB887; }
+        .step-ami { background-color: #CD853F; }
+        .step-uwehe { background-color: #D2691E; }
+        .step-lele-uwehe { background-color: #8B4513; }
+        .step-kalakaua { background-color: #A0522D; }
+        .step-other { background-color: #6B8E23; }
         
         #stepSelector select, #stepSelector button {
             font-size: 0.9rem;
@@ -290,6 +298,23 @@ document.addEventListener('DOMContentLoaded', function() {
     let selectedFrames = [];
     let selectedStepFrames = [];
     let timeoutId;
+
+    // 既存のステップ情報を色分け
+    document.querySelectorAll('.step-info').forEach(stepInfo => {
+        const step = stepInfo.textContent.trim().toLowerCase();
+        let stepClass;
+        switch(step) {
+            case 'カホロ': stepClass = 'step-kaholo'; break;
+            case 'ヘラ': stepClass = 'step-hela'; break;
+            case 'カオ': stepClass = 'step-kao'; break;
+            case 'アミ': stepClass = 'step-ami'; break;
+            case 'ウエへ': stepClass = 'step-uwehe'; break;
+            case 'レレウエへ': stepClass = 'step-lele-uwehe'; break;
+            case 'カラカウア': stepClass = 'step-kalakaua'; break;
+            default: stepClass = 'step-other';
+        }
+        stepInfo.classList.add(stepClass);
+    });
 
     if (toggleSelectModeButton && selectControls && deleteButton && frameScroller) {
         toggleSelectModeButton.addEventListener('click', function() {
@@ -478,14 +503,6 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('選択されたフレーム:', selectedStepFrames.map(frame => frame.dataset.frameIndex));
         console.log('選択されたステップ:', step);
         
-        // UIを更新
-        selectedStepFrames.forEach(frame => {
-            const stepInfo = frame.querySelector('.step-info');
-            if (stepInfo) {
-                stepInfo.textContent = step;
-            }
-        });
-        
         // サーバーにデータを送信
         updateSteps(selectedStepFrames.map(frame => frame.dataset.frameIndex), step);
         
@@ -500,6 +517,29 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateSteps(frameIndices, step) {
         const songId = '{{ $song->id }}';
         console.log('updateSteps が呼び出されました:', frameIndices, step);
+
+        // ステップに対応するクラス名を決定
+        let stepClass;
+        switch(step.toLowerCase()) {
+            case 'カホロ': stepClass = 'step-kaholo'; break;
+            case 'ヘラ': stepClass = 'step-hela'; break;
+            case 'カオ': stepClass = 'step-kao'; break;
+            case 'アミ': stepClass = 'step-ami'; break;
+            case 'ウエへ': stepClass = 'step-uwehe'; break;
+            case 'レレウエへ': stepClass = 'step-lele-uwehe'; break;
+            case 'カラカウア': stepClass = 'step-kalakaua'; break;
+            default: stepClass = 'step-other';
+        }
+
+        // UIを更新
+        selectedStepFrames.forEach(frame => {
+            const stepInfo = frame.querySelector('.step-info');
+            if (stepInfo) {
+                stepInfo.textContent = step;
+                stepInfo.className = 'step-info ' + stepClass;
+            }
+        });
+
         fetch(`/choreography/${songId}/update-steps`, {
             method: 'POST',
             headers: {
