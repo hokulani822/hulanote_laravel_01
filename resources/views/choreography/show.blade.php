@@ -219,7 +219,7 @@
                                <div class="mb-4">
                                 <h2 class="text-2xl font-semibold text-soft-brown mb-4">歌詞</h2>
                                 <div id="lyricsContainer" class="relative">
-                                <div id="lyricsFrame" class="w-full p-2 border border-soft-brown rounded bg-white bg-opacity-75 whitespace-nowrap overflow-x-auto" contenteditable="true">
+                                <div id="lyricsFrame" class="w-full p-2 border border-soft-brown rounded bg-white bg-opacity-75 whitespace-nowrap overflow-x-auto font-bold text-lg leading-relaxed text-gray-600" contenteditable="true">
                                     {{ $choreography->lyrics_frames ?? '' }}
                                 </div>
                                 <p id="saveStatus" class="text-sm text-gray-600 mt-2"></p>
