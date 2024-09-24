@@ -73,6 +73,12 @@
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.3); /* 暗い影を追加 */
         }
         
+        #lyricsFrame {
+            white-space: nowrap;
+            overflow-x: auto;
+            overflow-y: hidden;
+        }
+
         .video-wrapper {
             max-width: 640px;
             margin: 0 auto;
@@ -431,6 +437,21 @@ document.addEventListener('DOMContentLoaded', function() {
             timeoutId = setTimeout(function() {
                 saveLyrics();
             }, 1000);
+        });
+
+        // 新しく追加：改行を防止
+        lyricsFrame.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+            }
+        });
+
+        // 新しく追加：ペースト時に改行を空白に置換
+        lyricsFrame.addEventListener('paste', function(e) {
+            e.preventDefault();
+            let text = (e.originalEvent || e).clipboardData.getData('text/plain');
+            text = text.replace(/\n/g, ' ');
+            document.execCommand('insertText', false, text);
         });
     }
 
