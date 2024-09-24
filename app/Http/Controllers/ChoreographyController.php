@@ -31,7 +31,7 @@ class ChoreographyController extends Controller
     }
 
     public function uploadVideo(Request $request, Song $song)
-    {
+{
     Log::info('Video upload process started', ['song_id' => $song->id]);
 
     try {
@@ -65,30 +65,24 @@ class ChoreographyController extends Controller
             // フレーム抽出を非同期で実行
             Artisan::queue('app:extract-video-frames', ['video_id' => $video->id]);
 
-            return response()->json([
-                'success' => true,
-                'message' => '動画が更新されました。画像を抽出します。',
-                'video_url' => Storage::url($path),
-                'video_id' => $video->id
-            ]);
+            // セッションにメッセージを保存
+            session()->flash('success', '動画が更新されました。画像を抽出しています。');
+
+            // リダイレクト
+            return redirect()->route('choreography.show', ['song' => $song]);
         }
 
-        return response()->json([
-            'success' => false,
-            'message' => '動画のアップロードに失敗しました。'
-        ], 400);
+        // エラーの場合
+        return redirect()->back()->with('error', '動画のアップロードに失敗しました。');
 
     } catch (\Exception $e) {
         Log::error('Error in upload video', [
             'error' => $e->getMessage(),
             'trace' => $e->getTraceAsString()
         ]);
-        return response()->json([
-            'success' => false,
-            'message' => '動画のアップロードに失敗しました: ' . $e->getMessage()
-        ], 500);
+        return redirect()->back()->with('error', '動画のアップロードに失敗しました: ' . $e->getMessage());
     }
-    }
+}
 
     public function deleteVideo(Song $song, ChoreographyVideo $video)
     {

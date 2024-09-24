@@ -1,4 +1,4 @@
-<!-- resources/views/choreography_videos/show.blade.php -->
+ resources/views/choreography_videos/show.blade.php 
 @extends('layouts.app')
 
 @section('content')
