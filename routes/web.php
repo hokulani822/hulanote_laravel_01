@@ -42,14 +42,6 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/{song}/update-steps', [ChoreographyController::class, 'updateSteps'])->name('choreography.update-steps');
     });
     
-    // 振り付け動画関連のルート
-    Route::prefix('choreography-videos')->group(function () {
-        Route::get('/upload', [ChoreographyVideoController::class, 'showUploadForm'])->name('choreography_videos.upload.form');
-        Route::post('/upload', [ChoreographyVideoController::class, 'store'])->name('choreography_videos.store');
-        Route::get('/{video}', [ChoreographyVideoController::class, 'show'])->name('choreography_videos.show');
-        Route::delete('/choreography/{song}/video/{video}', [ChoreographyController::class, 'deleteVideo'])->name('choreography.delete_video');
-    });
-    
     // プロフィール関連のルート
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
