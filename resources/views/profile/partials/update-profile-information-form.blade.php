@@ -112,16 +112,6 @@
 </style>
 
 <body>
-    <header class="header">
-        <div class="header-content">
-            <a href="{{ route('dashboard') }}" class="header-link">ダッシュボード</a>
-            <a href="{{ route('logout') }}" class="header-link" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">ログアウト</a>
-            <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-                @csrf
-            </form>
-        </div>
-    </header>
-
     <div class="main-content">
         <div class="container">
             <h2>プロフィール情報</h2>

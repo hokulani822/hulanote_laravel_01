@@ -1,23 +1,22 @@
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700&family=Dancing+Script:wght@700&display=swap');
     
+    body {
+        background-color: #f3e5f5; /* ライトラベンダー色の背景 */
+        font-family: 'Noto Sans JP', sans-serif;
+    }
     .main-content {
         display: flex;
         justify-content: center;
         align-items: flex-start;
         padding: 2rem;
-        background-image: url('{{ asset('images/plumeria_background.jpg') }}');
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-        background-attachment: fixed;
         min-height: 100vh;
     }
     .container {
         width: 100%;
         max-width: 600px;
         padding: 2rem;
-        background-color: rgba(230, 230, 250, 0.85); /* パープルの背景色 */
+        background-color: rgba(230, 230, 250, 0.85);
         border-radius: 10px;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
