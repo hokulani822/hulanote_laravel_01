@@ -128,7 +128,7 @@
         <div class="header-content">
             <a href="{{ route('login') }}" class="header-link">ログイン</a>
             @if (Route::has('register'))
-                <a href="{{ route('register') }}" class="header-link">登録</a>
+                <a href="{{ route('register') }}" class="header-link">新規登録</a>
             @endif
         </div>
     </header>

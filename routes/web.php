@@ -8,13 +8,19 @@ use App\Http\Controllers\LyricsController;
 use Illuminate\Support\Facades\Route;
 
 // 公開ルート
-Route::get('/', [SongController::class, 'index'])->name('songs.index');
+Route::get('/', function () {
+    return view('welcome');
+})->name('welcome');
+
 Route::get('/songs/{song}', [SongController::class, 'show'])->name('songs.show');
 
 // 認証が必要なルート
 Route::middleware(['auth'])->group(function () {
     // ダッシュボード
     Route::get('/dashboard', [SongController::class, 'index'])->name('dashboard');
+    
+    // 曲一覧
+    Route::get('/songs', [SongController::class, 'index'])->name('songs.index');
     
     // 曲関連のルート
     Route::post('/songs', [SongController::class, 'store'])->name('songs.store');
@@ -38,7 +44,6 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/{song}/delete-frames', [ChoreographyController::class, 'deleteFrames'])
             ->name('choreography.delete_frames');
         Route::post('/{song}/update-lyrics', [ChoreographyController::class, 'updateLyrics'])->name('choreography.update-lyrics');
-        // Route::post('/{song}/update-step', [ChoreographyController::class, 'updateStep'])->name('choreography.update-step');
         Route::post('/{song}/update-steps', [ChoreographyController::class, 'updateSteps'])->name('choreography.update-steps');
     });
     

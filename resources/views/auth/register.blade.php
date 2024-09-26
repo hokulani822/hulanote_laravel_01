@@ -117,13 +117,13 @@
     <header class="header">
         <div class="header-content">
             <a href="{{ route('login') }}" class="header-link">ログイン</a>
-            <a href="{{ route('register') }}" class="header-link">登録</a>
+            <a href="{{ route('register') }}" class="header-link">新規登録</a>
         </div>
     </header>
 
     <div class="main-content">
         <div class="container">
-            <h1>Welcome to Hula Note</h1>
+            <h1>Welcome to "Hula Note"</h1>
             <form method="POST" action="{{ route('register') }}">
                 @csrf
                 <div class="form-group">
