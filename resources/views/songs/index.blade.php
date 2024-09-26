@@ -77,7 +77,7 @@
                             @foreach ($songs as $song)
                                 <li class="bg-lavender bg-opacity-50 p-4 rounded-lg shadow-md hover:shadow-lg transition duration-300 border border-soft-brown">
                                     <div class="flex justify-between items-center">
-                                        <a href="{{ route('songs.show', $song->id) }}" class="song-title text-lg font-medium text-soft-brown">
+                                        <a href="{{ route('choreography.show', $song->id) }}" class="song-title text-lg font-medium text-soft-brown">
                                             {{ $song->title }} - {{ $song->artist }}
                                         </a>
                                         <div class="space-x-2">

@@ -36,7 +36,7 @@
                 align-items: center;
             }
             .header-link {
-                font-size: 1.5rem;
+                font-size: 1.4rem;
                 font-weight: 600;
                 color: #8B7355;
                 text-decoration: none;
@@ -110,10 +110,6 @@
                 border-radius: 0.5rem;
                 box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
                 transition: transform 0.3s ease;
-            }
-
-            .feature-item:hover {
-                transform: translateY(-5px);
             }
 
             .feature-title {
