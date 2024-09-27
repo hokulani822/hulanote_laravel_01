@@ -16,7 +16,6 @@
         body, h2, button, input { font-family: 'Noto Sans JP', sans-serif; }
         .title-font { font-family: 'Dancing Script', cursive; }
     </style>
-
     <div class="min-h-screen bg-plumeria flex justify-center items-center py-12 px-4">
         <div class="w-full max-w-4xl">
             <div class="bg-lavender rounded-lg shadow-lg p-8 mx-auto">

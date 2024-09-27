@@ -5,7 +5,7 @@
             <div class="flex">
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="secure_url(route('dashboard'))" :active="request()->routeIs('dashboard')" class="font-semibold text-xl leading-tight" style="color: #8B7355;">
+                    <x-nav-link :href="secure_url(route('dashboard'))" :active="request()->routeIs('dashboard')" class="font-semibold text-2xl leading-tight" style="color: #8B7355;">
                         {{ __('Hula Note') }}
                     </x-nav-link>
                 </div>
