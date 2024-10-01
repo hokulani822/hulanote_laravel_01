@@ -44,7 +44,8 @@ class SongController extends Controller
 
     public function show(Song $song)
     {
-        return view('songs.index', compact('song'));
+    $songs = Song::orderBy('created_at', 'desc')->get();
+    return view('songs.index', compact('songs'));
     }
 
     public function edit(Song $song)

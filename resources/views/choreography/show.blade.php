@@ -279,8 +279,8 @@
 
 
                     <div class="flex justify-between items-center mt-8">
-                        <a href="{{ route('songs.show', $song) }}" class="text-soft-brown hover:text-opacity-80 font-bold">
-                            ← 曲の詳細に戻る
+                        <a href="{{ route('songs.index') }}" class="text-soft-brown hover:text-opacity-80 font-bold">
+                            ← 曲一覧に戻る
                         </a>
                     </div>
                 </div>
