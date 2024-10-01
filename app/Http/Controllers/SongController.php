@@ -44,7 +44,7 @@ class SongController extends Controller
 
     public function show(Song $song)
     {
-        return view('songs.show', compact('song'));
+        return view('songs.index', compact('song'));
     }
 
     public function edit(Song $song)
