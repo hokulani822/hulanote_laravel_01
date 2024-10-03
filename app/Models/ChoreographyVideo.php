@@ -13,8 +13,8 @@ class ChoreographyVideo extends Model
     protected $fillable = [
         'choreography_id',
         'url',
-        'ai_edited',
-        'ai_edited_url',
+        // 'ai_edited',
+        // 'ai_edited_url',
     ];
 
     protected $casts = [

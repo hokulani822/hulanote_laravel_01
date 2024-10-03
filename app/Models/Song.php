@@ -17,6 +17,12 @@ class Song extends Model
     {
         return $this->hasOne(Choreography::class);
     }
+    
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+    
 }
 
 

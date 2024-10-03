@@ -11,7 +11,7 @@ class SongController extends Controller
 {
     public function index()
     {
-        $songs = Song::orderBy('created_at', 'desc')->get();
+        $songs = Auth::user()->songs()->orderBy('created_at', 'desc')->get();
         return view('songs.index', compact('songs'));
     }
 
@@ -44,17 +44,20 @@ class SongController extends Controller
 
     public function show(Song $song)
     {
-    $songs = Song::orderBy('created_at', 'desc')->get();
-    return view('songs.index', compact('songs'));
+        $this->authorize('view', $song);
+        return view('songs.show', compact('song'));
     }
 
     public function edit(Song $song)
     {
+        $this->authorize('update', $song);
         return view('songs.edit', compact('song'));
     }
 
     public function update(Request $request, Song $song)
     {
+        $this->authorize('update', $song);
+
         $validator = Validator::make($request->all(), [
             'title' => 'required|min:3|max:255',
             'artist' => 'required|min:3|max:255',
@@ -75,6 +78,7 @@ class SongController extends Controller
 
     public function destroy(Song $song)
     {
+        $this->authorize('delete', $song);
         $song->delete();
         return redirect()->route('songs.index')->with('success', '曲が削除されました。');
     }
